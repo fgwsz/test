@@ -32,7 +32,7 @@ void __case_pass_count_increment(void)noexcept;
     static bool __fgtest_unit_register_of_##__UNIT_NAME__= \
     ::fgtest::__unit_add( \
         #__UNIT_NAME__, \
-        ::std::function<void()>{ \
+        ::std::function<void(void)>{ \
             __FGTEST_UNIT_FUNCTION_NAME(__UNIT_NAME__) \
         } \
     ) \
