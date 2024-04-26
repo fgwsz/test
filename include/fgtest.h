@@ -22,7 +22,7 @@ void __case_count_incement(void)noexcept;
 void __case_fail_count_increment(void)noexcept;
 //private
 void __case_pass_count_increment(void)noexcept;
-}
+}//namespace fgtest
 //private
 #define __FGTEST_UNIT_FUNCTION_NAME(__UNIT_NAME__) \
     __fgtest_unit_function_of_##__UNIT_NAME__ \
