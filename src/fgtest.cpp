@@ -1,8 +1,8 @@
 #include"fgtest.h"
-#include<cstddef>//::std::std::size_t
+#include<cstddef>//::std::size_t
 #include<iostream>//::std::cout
 #include<vector>//::std::vector
-#include<chrono>//::std::chrono::high_resolution_clock ::std::chrono::duration
+#include<chrono>//::std::chrono
 namespace fgtest{
 static ::std::vector<::std::string_view> __unit_names={};
 static ::std::vector<::std::function<void(void)>> __unit_functions={};
