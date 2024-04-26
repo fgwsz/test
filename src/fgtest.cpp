@@ -40,6 +40,7 @@ void exec(void)noexcept{
     double duration=0;
     ::std::string exception_string={};
     bool unit_is_pass=false;
+    ::fgtest::__unit_errors.clear();
     for(
         ::std::size_t index=0;
         index<::fgtest::__unit_functions.size();
@@ -119,6 +120,7 @@ void exec(std::string_view const& unit_name)noexcept{
     ::fgtest::__case_pass_count=0;
     ::fgtest::__case_fail_count=0;
     start_time=::std::chrono::high_resolution_clock::now();
+    ::fgtest::__unit_errors.clear();
     try{
         ::fgtest::__unit_functions[index]();
     }catch(::std::exception const& exception){
@@ -145,10 +147,10 @@ void exec(std::string_view const& unit_name)noexcept{
         <<"jump:"<<::fgtest::__case_count-(
             ::fgtest::__case_pass_count+::fgtest::__case_fail_count
         )<<".\n";
-    for(::std::size_t index=0;auto const& error: ::fgtest::__unit_errors){
-        ::std::cout<<"\t<fail> "<<index<<"\n";
+    for(::std::size_t i=0;auto const& error: ::fgtest::__unit_errors){
+        ::std::cout<<"\t<fail> "<<i<<"\n";
         ::std::cout<<error.what()<<"\n";
-        ++index;
+        ++i;
     }
     if(!exception_string.empty()){
         ::std::cout<<"\t<fail> "<<::fgtest::__unit_errors.size()<<"\n"
