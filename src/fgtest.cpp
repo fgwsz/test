@@ -77,10 +77,10 @@ void exec(void)noexcept{
             <<"jump:"<<::fgtest::__case_count-(
                 ::fgtest::__case_pass_count+::fgtest::__case_fail_count
             )<<".\n";
-        for(::std::size_t index=0;auto const& error: ::fgtest::__unit_errors){
-            ::std::cout<<"\t<fail> "<<index<<"\n";
+        for(::std::size_t i=0;auto const& error: ::fgtest::__unit_errors){
+            ::std::cout<<"\t<fail> "<<i<<"\n";
             ::std::cout<<error.what()<<"\n";
-            ++index;
+            ++i;
         }
         if(!exception_string.empty()){
             ::std::cout<<"\t<fail> "<<::fgtest::__unit_errors.size()<<"\n"
