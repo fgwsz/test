@@ -129,7 +129,7 @@ void exec(std::string_view const& unit_name)noexcept{
     }catch(char const* c_str){
         exception_string=c_str;
     }catch(...){
-        exception_string="unknown exception!";
+        exception_string="unknown exception.";
     }
     end_time=::std::chrono::high_resolution_clock::now();
     duration=::std::chrono::duration_cast<::std::chrono::duration<double>>(
