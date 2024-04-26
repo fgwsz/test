@@ -73,10 +73,7 @@ void exec(void)noexcept{
             <<" ["<<(unit_is_pass?"PASS":"FAIL")<<"] ("<<duration<<" ms)\n";
         ::std::cout<<"\tcase:"<<::fgtest::__case_count<<","
             <<"pass:"<<::fgtest::__case_pass_count<<","
-            <<"fail:"<<::fgtest::__case_fail_count<<","
-            <<"jump:"<<::fgtest::__case_count-(
-                ::fgtest::__case_pass_count+::fgtest::__case_fail_count
-            )<<".\n";
+            <<"fail:"<<::fgtest::__case_fail_count<<".\n";
         for(::std::size_t i=0;auto const& error: ::fgtest::__unit_errors){
             ::std::cout<<"\t<fail> "<<i<<"\n";
             ::std::cout<<error.what()<<"\n";
@@ -143,10 +140,7 @@ void exec(std::string_view const& unit_name)noexcept{
         <<" ["<<(unit_is_pass?"PASS":"FAIL")<<"] ("<<duration<<" ms)\n";
     ::std::cout<<"\tcase:"<<::fgtest::__case_count<<","
         <<"pass:"<<::fgtest::__case_pass_count<<","
-        <<"fail:"<<::fgtest::__case_fail_count<<","
-        <<"jump:"<<::fgtest::__case_count-(
-            ::fgtest::__case_pass_count+::fgtest::__case_fail_count
-        )<<".\n";
+        <<"fail:"<<::fgtest::__case_fail_count<<".\n";
     for(::std::size_t i=0;auto const& error: ::fgtest::__unit_errors){
         ::std::cout<<"\t<fail> "<<i<<"\n";
         ::std::cout<<error.what()<<"\n";
