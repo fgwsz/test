@@ -17,7 +17,9 @@ if(!($commit_info -eq "q")){
     git add git-push.ps1
     git add git-keep.ps1
     git add build*.ps1
+    git add build*.sh
     git add clean.ps1
+    git add clean.sh
     git commit -m $commit_info
     git push
 }
