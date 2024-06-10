@@ -11,8 +11,8 @@ TEST_UNIT(world){
     TEST_CASE(1+1==2);//TODO
 }
 int main(int argc,char* argv[]){
-    test::exec();
-    test::exec("world");
-    test::exec("undefined unit");
+    ::test::exec();
+    ::test::exec("world");
+    ::test::exec("undefined unit");
     return 0;
 }
