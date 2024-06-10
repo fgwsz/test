@@ -123,8 +123,7 @@ void exec(void)noexcept{
             ++i;
         }
         if(!exception_what.empty()){
-            ::std::cout<<"\t<fail> "<<::test::detail::unit_errors.size()<<"\n"
-                <<"\t\t<exce> "<<exception_what<<"\n";
+            ::std::cout<<"\t<exce> \n\t\t<what> "<<exception_what<<"\n";
         }
         exception_what.clear();
         ::test::detail::unit_errors.clear();
@@ -180,8 +179,7 @@ void exec(std::string_view const& unit_name)noexcept{
         ++i;
     }
     if(!exception_what.empty()){
-        ::std::cout<<"\t<fail> "<<::test::detail::unit_errors.size()<<"\n"
-            <<"\t\t<exce> "<<exception_what<<"\n";
+        ::std::cout<<"\t<exce> \n\t\t<what> "<<exception_what<<"\n";
     }
     ::test::detail::unit_errors.clear();
 }
