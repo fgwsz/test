@@ -86,6 +86,7 @@ void exec(void)noexcept{
     ::test::detail::unit_pass_count=0;
     ::test::detail::unit_fail_count=0;
     ::test::detail::unit_errors.clear();
+    ::std::size_t unit_errors_index=0;
     for(
         ::std::size_t index=0;
         index<::test::detail::unit_functions.size();
@@ -117,10 +118,11 @@ void exec(void)noexcept{
         ::std::cout<<"\tcase:"<<::test::detail::case_count<<","
             <<"pass:"<<::test::detail::case_pass_count<<","
             <<"fail:"<<::test::detail::case_fail_count<<".\n";
-        for(::std::size_t i=0;auto const& error: ::test::detail::unit_errors){
-            ::std::cout<<"\t<fail> "<<i<<"\n";
+        unit_errors_index=0;
+        for(auto const& error: ::test::detail::unit_errors){
+            ::std::cout<<"\t<fail> "<<unit_errors_index<<"\n";
             ::std::cout<<error.what()<<"\n";
-            ++i;
+            ++unit_errors_index;
         }
         if(!exception_what.empty()){
             ::std::cout<<"\t<exce> \n\t\t<what> "<<exception_what<<"\n";
@@ -173,10 +175,11 @@ void exec(std::string_view const& unit_name)noexcept{
     ::std::cout<<"\tcase:"<<::test::detail::case_count<<","
         <<"pass:"<<::test::detail::case_pass_count<<","
         <<"fail:"<<::test::detail::case_fail_count<<".\n";
-    for(::std::size_t i=0;auto const& error: ::test::detail::unit_errors){
-        ::std::cout<<"\t<fail> "<<i<<"\n";
+    ::std::size_t unit_errors_index=0;
+    for(auto const& error: ::test::detail::unit_errors){
+        ::std::cout<<"\t<fail> "<<unit_errors_index<<"\n";
         ::std::cout<<error.what()<<"\n";
-        ++i;
+        ++unit_errors_index;
     }
     if(!exception_what.empty()){
         ::std::cout<<"\t<exce> \n\t\t<what> "<<exception_what<<"\n";
