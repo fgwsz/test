@@ -1,4 +1,3 @@
-#include<iostream>
 #include<test/test.h>
 TEST_UNIT(hello){
     TEST_CASE(1+1==2);
