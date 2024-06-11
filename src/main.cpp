@@ -1,17 +1,103 @@
 #include<test/test.hpp>
-TEST_UNIT(hello){
-    TEST_EXPR(1+1==2);
-    TEST_EXPR(1+2==3);
+TEST_CASE(check_passed){
+    TEST_CHECK(1==1);
+    TEST_CHECK(2!=1);
+    TEST_CHECK(2>1);
+    TEST_CHECK(2>=1);
+    TEST_CHECK(2>=2);
+    TEST_CHECK(1<2);
+    TEST_CHECK(1<=2);
+    TEST_CHECK(1<=1);
+    TEST_CHECK_OP(==,1,1);
+    TEST_CHECK_OP(!=,2,1);
+    TEST_CHECK_OP(>,2,1);
+    TEST_CHECK_OP(>=,2,1);
+    TEST_CHECK_OP(>=,2,2);
+    TEST_CHECK_OP(<,1,2);
+    TEST_CHECK_OP(<=,1,2);
+    TEST_CHECK_OP(<=,1,1);
+    TEST_CHECK_EQ(1,1);
+    TEST_CHECK_NE(2,1);
+    TEST_CHECK_GT(2,1);
+    TEST_CHECK_GE(2,1);
+    TEST_CHECK_GE(2,2);
+    TEST_CHECK_LT(1,2);
+    TEST_CHECK_LE(1,2);
+    TEST_CHECK_LE(1,1);
 }
-TEST_UNIT(world){
-    TEST_EXPR(1+1==3);
-    TEST_EXPR(1+2==4);
-    throw "";
-    TEST_EXPR(1+1==2);//TODO
+TEST_CASE(check_failed){
+    TEST_CHECK(!(1==1));
+    TEST_CHECK(!(2!=1));
+    TEST_CHECK(!(2>1));
+    TEST_CHECK(!(2>=1));
+    TEST_CHECK(!(2>=2));
+    TEST_CHECK(!(1<2));
+    TEST_CHECK(!(1<=2));
+    TEST_CHECK(!(1<=1));
+    TEST_CHECK_OP(==,2,1);
+    TEST_CHECK_OP(!=,1,1);
+    TEST_CHECK_OP(>,2,2);
+    TEST_CHECK_OP(>=,1,2);
+    TEST_CHECK_OP(<,1,1);
+    TEST_CHECK_OP(<=,2,1);
+    TEST_CHECK_EQ(2,1);
+    TEST_CHECK_NE(1,1);
+    TEST_CHECK_GT(2,2);
+    TEST_CHECK_GE(1,2);
+    TEST_CHECK_LT(1,1);
+    TEST_CHECK_LE(2,1);
+}
+TEST_CASE(assert_passed){
+    TEST_ASSERT(1==1);
+    TEST_ASSERT(2!=1);
+    TEST_ASSERT(2>1);
+    TEST_ASSERT(2>=1);
+    TEST_ASSERT(2>=2);
+    TEST_ASSERT(1<2);
+    TEST_ASSERT(1<=2);
+    TEST_ASSERT(1<=1);
+    TEST_ASSERT_OP(==,1,1);
+    TEST_ASSERT_OP(!=,2,1);
+    TEST_ASSERT_OP(>,2,1);
+    TEST_ASSERT_OP(>=,2,1);
+    TEST_ASSERT_OP(>=,2,2);
+    TEST_ASSERT_OP(<,1,2);
+    TEST_ASSERT_OP(<=,1,2);
+    TEST_ASSERT_OP(<=,1,1);
+    TEST_ASSERT_EQ(1,1);
+    TEST_ASSERT_NE(2,1);
+    TEST_ASSERT_GT(2,1);
+    TEST_ASSERT_GE(2,1);
+    TEST_ASSERT_GE(2,2);
+    TEST_ASSERT_LT(1,2);
+    TEST_ASSERT_LE(1,2);
+    TEST_ASSERT_LE(1,1);
+}
+TEST_CASE(assert_failed){
+    //TEST_ASSERT(!(1==1));
+    //TEST_ASSERT(!(2!=1));
+    //TEST_ASSERT(!(2>1));
+    //TEST_ASSERT(!(2>=1));
+    //TEST_ASSERT(!(2>=2));
+    //TEST_ASSERT(!(1<2));
+    //TEST_ASSERT(!(1<=2));
+    //TEST_ASSERT(!(1<=1));
+    //TEST_ASSERT_OP(==,2,1);
+    //TEST_ASSERT_OP(!=,1,1);
+    //TEST_ASSERT_OP(>,2,2);
+    //TEST_ASSERT_OP(>=,1,2);
+    //TEST_ASSERT_OP(<,1,1);
+    //TEST_ASSERT_OP(<=,2,1);
+    //TEST_ASSERT_EQ(2,1);
+    //TEST_ASSERT_NE(1,1);
+    //TEST_ASSERT_GT(2,2);
+    //TEST_ASSERT_GE(1,2);
+    //TEST_ASSERT_LT(1,1);
+    //TEST_ASSERT_LE(2,1);
 }
 int main(int argc,char* argv[]){
     ::test::exec();
-    ::test::exec("world");
+    ::test::exec("check_passed");
     ::test::exec("undefined");
     return 0;
 }

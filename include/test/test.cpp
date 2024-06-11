@@ -1,6 +1,7 @@
 #include"test.hpp"
 #include<cstddef>//::std::size_t
 #include<cstdio>//::std::printf
+#include<cstdlib>//::std::exit
 #include<chrono>//::std::chrono
 #include<ratio>//::std::ratio
 #include<vector>//::std::vector
@@ -44,70 +45,86 @@ public:
         return this->delta<::std::ratio<3600>>();
     }
 };
-static ::std::vector<::std::string> unit_names={};
-static ::std::vector<::std::function<void(void)>> unit_functions={};
-static ::std::vector<::std::string> unit_errors={};
-static ::std::unordered_map<::std::string,::std::size_t> unit_name_to_index={};
-static ::std::size_t expr_count=0;
-static ::std::size_t expr_fail_count=0;
-static ::std::size_t expr_pass_count=0;
-bool unit_push(
-    ::std::string const& unit_name,
-    ::std::function<void(void)> const& unit_function
+static ::std::vector<::std::string> case_names={};
+static ::std::vector<::std::function<void(void)>> case_functions={};
+static ::std::vector<::std::string> case_errors={};
+static ::std::unordered_map<::std::string,::std::size_t> case_name_to_index={};
+static ::std::size_t check_count=0;
+static ::std::size_t check_failed_count=0;
+static ::std::size_t check_passed_count=0;
+bool case_push(
+    ::std::string const& case_name,
+    ::std::function<void(void)> const& case_function
 )noexcept{
-    if(::test::detail::unit_name_to_index.count(unit_name)!=0){
+    if(::test::detail::case_name_to_index.count(case_name)!=0){
         return false;
     }
-    ::test::detail::unit_names.emplace_back(unit_name);
-    ::test::detail::unit_functions.emplace_back(unit_function);
-    ::test::detail::unit_name_to_index.emplace(
-        unit_name
-        ,::test::detail::unit_name_to_index.size()
+    ::test::detail::case_names.emplace_back(case_name);
+    ::test::detail::case_functions.emplace_back(case_function);
+    ::test::detail::case_name_to_index.emplace(
+        case_name
+        ,::test::detail::case_name_to_index.size()
     );
     return true;
 }
 void error_push(
     ::std::string const& file
     ,::std::string const& line
-    ,::std::string const& expr
+    ,::std::string const& check
 )noexcept{
-    ::test::detail::unit_errors.emplace_back(
+    ::test::detail::case_errors.emplace_back(
         "\t\t<file> "+file
         +"\n\t\t<line> "+line
-        +"\n\t\t<expr> "+expr
+        +"\n\t\t<check> "+check
     );
 }
-void expr_count_incement(void)noexcept{
-    ++::test::detail::expr_count;
+void assert_failed(
+    ::std::string const& file
+    ,::std::string const& line
+    ,::std::string const& check
+)noexcept{
+    ::std::printf(
+        "[test::assert] [failed]\n"
+        "\t<file> %s\n"
+        "\t<line> %s\n"
+        "\t<check> %s\n"
+        ,file.c_str()
+        ,line.c_str()
+        ,check.c_str()
+    );
+    ::std::exit(0);
 }
-void expr_fail_count_increment(void)noexcept{
-    ++::test::detail::expr_fail_count;
+void check_count_incement(void)noexcept{
+    ++::test::detail::check_count;
 }
-void expr_pass_count_increment(void)noexcept{
-    ++::test::detail::expr_pass_count;
+void check_failed_count_increment(void)noexcept{
+    ++::test::detail::check_failed_count;
 }
-static bool exec(::std::size_t unit_index)noexcept{
-    ::test::detail::unit_errors.clear();
-    ::test::detail::expr_count=0;
-    ::test::detail::expr_pass_count=0;
-    ::test::detail::expr_fail_count=0;
-    bool unit_is_pass=false;
-    bool unit_has_exception=false;
-    ::std::string unit_exception_what={};
-    Timer unit_timer={};
+void check_passed_count_increment(void)noexcept{
+    ++::test::detail::check_passed_count;
+}
+static bool exec(::std::size_t case_index)noexcept{
+    ::test::detail::case_errors.clear();
+    ::test::detail::check_count=0;
+    ::test::detail::check_passed_count=0;
+    ::test::detail::check_failed_count=0;
+    bool case_is_passed=false;
+    bool case_has_exception=false;
+    ::std::string case_exception_what={};
+    Timer case_timer={};
     auto catch_callback=[
-        &unit_timer
-        ,&unit_exception_what
-        ,&unit_has_exception
+        &case_timer
+        ,&case_exception_what
+        ,&case_has_exception
     ](::std::string const& what){
-        unit_timer.stop();
-        unit_exception_what
+        case_timer.stop();
+        case_exception_what
             .append("\"").append(what).append("\"");
-        unit_has_exception=true;
+        case_has_exception=true;
     };
-    unit_timer.start();
+    case_timer.start();
     try{
-        ::test::detail::unit_functions[unit_index]();
+        ::test::detail::case_functions[case_index]();
     }catch(char const* c_str){
         catch_callback(c_str);
     }catch(::std::string const& string){
@@ -117,75 +134,75 @@ static bool exec(::std::size_t unit_index)noexcept{
     }catch(...){
         catch_callback("unknown exception.");
     }
-    if(!unit_has_exception){
-        unit_timer.stop();
+    if(!case_has_exception){
+        case_timer.stop();
     }
-    unit_is_pass=(!unit_has_exception)
-        &&::test::detail::unit_errors.empty();
+    case_is_passed=(!case_has_exception)
+        &&::test::detail::case_errors.empty();
     ::std::printf(
-        "[test::unit \"%s\"] [%s] (%f ms)\n"
-        "\texpr:%zu,pass:%zu,fail:%zu.\n"
-        ,::test::detail::unit_names[unit_index].c_str()
-        ,::std::string(unit_is_pass?"pass":"fail").c_str()
-        ,unit_timer.delta_milliseconds()
-        ,::test::detail::expr_count
-        ,::test::detail::expr_pass_count
-        ,::test::detail::expr_fail_count
+        "[test::case \"%s\"] [%s] (%f ms)\n"
+        "\tcheck:%zu,passed:%zu,failed:%zu.\n"
+        ,::test::detail::case_names[case_index].c_str()
+        ,::std::string(case_is_passed?"passed":"failed").c_str()
+        ,case_timer.delta_milliseconds()
+        ,::test::detail::check_count
+        ,::test::detail::check_passed_count
+        ,::test::detail::check_failed_count
     );
     for(
         ::std::size_t index=0;
-        index<::test::detail::unit_errors.size();
+        index<::test::detail::case_errors.size();
         ++index
     ){
         ::std::printf(
-            "\t<fail> %zu\n"
+            "\t<error> %zu\n"
             "%s\n"
             ,index
-            ,::test::detail::unit_errors[index].c_str()
+            ,::test::detail::case_errors[index].c_str()
         );
     }
-    if(unit_has_exception){
+    if(case_has_exception){
         ::std::printf(
-            "\t<exce>\n"
+            "\t<exception>\n"
             "\t\t<what> %s\n"
-            ,unit_exception_what.c_str()
+            ,case_exception_what.c_str()
         );
     }
-    return unit_is_pass;
+    return case_is_passed;
 }
 }//namespace test::detail
 void exec(void)noexcept{
-    ::std::size_t unit_count=0;
-    ::std::size_t unit_pass_count=0;
-    ::std::size_t unit_fail_count=0;
+    ::std::size_t case_count=0;
+    ::std::size_t case_passed_count=0;
+    ::std::size_t case_failed_count=0;
     for(
         ::std::size_t index=0;
-        index<::test::detail::unit_functions.size();
+        index<::test::detail::case_functions.size();
         ++index
     ){
         if(::test::detail::exec(index)){
-            ++unit_pass_count;
+            ++case_passed_count;
         }else{
-            ++unit_fail_count;
+            ++case_failed_count;
         }
-        ++unit_count;
+        ++case_count;
     }
     ::std::printf(
         "[test::all]\n"
-        "\tunit:%zu,pass:%zu,fail:%zu.\n"
-        ,unit_count
-        ,unit_pass_count
-        ,unit_fail_count
+        "\tcase:%zu,passed:%zu,failed:%zu.\n"
+        ,case_count
+        ,case_passed_count
+        ,case_failed_count
     );
 }
-void exec(std::string const& unit_name)noexcept{
-    if(::test::detail::unit_name_to_index.count(unit_name)==0){
+void exec(std::string const& case_name)noexcept{
+    if(::test::detail::case_name_to_index.count(case_name)==0){
         ::std::printf(
-            "[test::unit \"%s\"] can't be found.\n"
-            ,unit_name.c_str()
+            "[test::case \"%s\"] can't be found.\n"
+            ,case_name.c_str()
         );
         return;
     }
-    ::test::detail::exec(::test::detail::unit_name_to_index[unit_name]);
+    ::test::detail::exec(::test::detail::case_name_to_index[case_name]);
 }
 }//namespace test
