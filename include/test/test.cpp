@@ -1,7 +1,6 @@
 #include"test.hpp"
 #include<cstddef>//::std::size_t
 #include<cstdio>//::std::printf
-#include<cstdlib>//::std::exit
 #include<chrono>//::std::chrono
 #include<ratio>//::std::ratio
 #include<vector>//::std::vector
@@ -78,21 +77,27 @@ void error_push(
         +"\n\t\t<check> "+check
     );
 }
+class TestAssertFailedException:public ::std::exception{
+    ::std::string what_;
+public:
+    TestAssertFailedException(::std::string const& what)
+        :what_(what)
+    {}
+    virtual char const* what()const noexcept override{
+        return this->what_.c_str();
+    }
+};
 void assert_failed(
     ::std::string const& file
     ,::std::string const& line
     ,::std::string const& check
-)noexcept{
-    ::std::printf(
-        "[test::assert] [failed]\n"
-        "\t<file> %s\n"
-        "\t<line> %s\n"
-        "\t<check> %s\n"
-        ,file.c_str()
-        ,line.c_str()
-        ,check.c_str()
-    );
-    ::std::exit(0);
+){
+    throw ::test::detail::TestAssertFailedException{
+        "[test::assert] [failed]"
+        "\n\t\t<file> "+file
+        +"\n\t\t<line> "+line
+        +"\n\t\t<assert> "+check
+    };
 }
 void check_count_incement(void)noexcept{
     ++::test::detail::check_count;
@@ -118,21 +123,22 @@ static bool exec(::std::size_t case_index)noexcept{
         ,&case_has_exception
     ](::std::string const& what){
         case_timer.stop();
-        case_exception_what
-            .append("\"").append(what).append("\"");
+        case_exception_what=what;
         case_has_exception=true;
     };
     case_timer.start();
     try{
         ::test::detail::case_functions[case_index]();
     }catch(char const* c_str){
-        catch_callback(c_str);
+        catch_callback("\""+::std::string{c_str}+"\"");
     }catch(::std::string const& string){
-        catch_callback(string);
-    }catch(::std::exception const& exception){
+        catch_callback("\""+string+"\"");
+    }catch(::test::detail::TestAssertFailedException const& exception){
         catch_callback(exception.what());
+    }catch(::std::exception const& exception){
+        catch_callback("\""+::std::string{exception.what()}+"\"");
     }catch(...){
-        catch_callback("unknown exception.");
+        catch_callback("[unknown exception]");
     }
     if(!case_has_exception){
         case_timer.stop();

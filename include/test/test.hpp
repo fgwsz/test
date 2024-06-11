@@ -19,7 +19,7 @@ void assert_failed(
     ::std::string const& file
     ,::std::string const& line
     ,::std::string const& check
-)noexcept;
+);
 void check_count_incement(void)noexcept;
 void check_failed_count_increment(void)noexcept;
 void check_passed_count_increment(void)noexcept;
