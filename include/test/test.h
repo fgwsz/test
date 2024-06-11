@@ -1,17 +1,19 @@
 #pragma once
-#include<string_view>//::std::string_view
 #include<functional>//::std::function
-#include<stdexcept>//::std::runtime_error
 #include<string>//::std::string ::std::to_string
 namespace test{
 void exec(void)noexcept;
-void exec(std::string_view const& unit_name)noexcept;
+void exec(::std::string const& unit_name)noexcept;
 namespace detail{
-bool unit_add(
-    ::std::string_view const& unit_name,
-    ::std::function<void(void)> const& unit_function
+bool unit_push(
+    ::std::string const& unit_name
+    ,::std::function<void(void)> const& unit_function
 )noexcept;
-void throw_error(::std::runtime_error const& runtime_error)noexcept;
+void error_push(
+    ::std::string const& file
+    ,::std::string const& line
+    ,::std::string const& expr
+)noexcept;
 void expr_count_incement(void)noexcept;
 void expr_fail_count_increment(void)noexcept;
 void expr_pass_count_increment(void)noexcept;
@@ -21,7 +23,7 @@ void expr_pass_count_increment(void)noexcept;
 #define TEST_UNIT(unit_name__)                             \
     static void test_unit_function_of_##unit_name__(void); \
     static bool test_unit_register_of_##unit_name__=       \
-        ::test::detail::unit_add(                          \
+        ::test::detail::unit_push(                         \
             #unit_name__,                                  \
             ::std::function<void(void)>{                   \
                 test_unit_function_of_##unit_name__        \
@@ -34,11 +36,11 @@ void expr_pass_count_increment(void)noexcept;
     ::test::detail::expr_count_incement();                 \
     if(!(__VA_ARGS__)){                                    \
         ::test::detail::expr_fail_count_increment();       \
-        ::test::detail::throw_error(::std::runtime_error(  \
-            "\t\t<file> "+::std::string(__FILE__)+"\n"     \
-            "\t\t<line> "+::std::to_string(__LINE__)+"\n"  \
-            "\t\t<expr> "+::std::string(#__VA_ARGS__)      \
-        ));                                                \
+        ::test::detail::error_push(                        \
+            __FILE__                                       \
+            ,::std::to_string(__LINE__)                    \
+            ,#__VA_ARGS__                                  \
+        );                                                 \
     }else{                                                 \
         ::test::detail::expr_pass_count_increment();       \
     }                                                      \

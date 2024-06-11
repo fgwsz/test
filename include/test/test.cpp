@@ -1,5 +1,7 @@
 #include"test.h"
 #include<cstddef>//::std::size_t
+#include<exception>//::std::exception
+#include<stdexcept>//::std::runtime_error
 #include<iostream>//::std::cout
 #include<vector>//::std::vector
 #include<unordered_map>//::std::unordered_map
@@ -43,18 +45,18 @@ public:
         return this->delta<::std::ratio<3600>>();
     }
 };
-static ::std::vector<::std::string_view> unit_names={};
+static ::std::vector<::std::string> unit_names={};
 static ::std::vector<::std::function<void(void)>> unit_functions={};
 static ::std::vector<::std::runtime_error> unit_errors={};
-static ::std::unordered_map<::std::string_view,::std::size_t> unit_name_to_index={};
+static ::std::unordered_map<::std::string,::std::size_t> unit_name_to_index={};
 static ::std::size_t unit_count=0;
 static ::std::size_t unit_fail_count=0;
 static ::std::size_t unit_pass_count=0;
 static ::std::size_t expr_count=0;
 static ::std::size_t expr_fail_count=0;
 static ::std::size_t expr_pass_count=0;
-bool unit_add(
-    ::std::string_view const& unit_name,
+bool unit_push(
+    ::std::string const& unit_name,
     ::std::function<void(void)> const& unit_function
 )noexcept{
     ::test::detail::unit_names.emplace_back(unit_name);
@@ -66,8 +68,18 @@ bool unit_add(
     ++::test::detail::unit_count;
     return true;
 }
-void throw_error(::std::runtime_error const& runtime_error)noexcept{
-    ::test::detail::unit_errors.emplace_back(runtime_error);
+void error_push(
+    ::std::string const& file
+    ,::std::string const& line
+    ,::std::string const& expr
+)noexcept{
+    ::test::detail::unit_errors.emplace_back(
+        ::std::runtime_error(
+            "\t\t<file> "+file
+            +"\n\t\t<line> "+line
+            +"\n\t\t<expr> "+expr
+        )
+    );
 }
 void expr_count_incement(void)noexcept{
     ++::test::detail::expr_count;
@@ -101,8 +113,6 @@ void exec(void)noexcept{
             ::test::detail::unit_functions[index]();
         }catch(char const* c_str){
             exception_what=c_str;
-        }catch(::std::string_view const& string_view){
-            exception_what=string_view;
         }catch(::std::string const& string){
             exception_what=string;
         }catch(::std::exception const& exception){
@@ -140,7 +150,7 @@ void exec(void)noexcept{
         <<"pass:"<<::test::detail::unit_pass_count<<","
         <<"fail:"<<::test::detail::unit_fail_count<<".\n";
 }
-void exec(std::string_view const& unit_name)noexcept{
+void exec(std::string const& unit_name)noexcept{
     if(::test::detail::unit_name_to_index.count(unit_name)==0){
         ::std::cout<<"[test::UNIT] "<<unit_name<<" can't be found.\n";
         return;
@@ -158,8 +168,6 @@ void exec(std::string_view const& unit_name)noexcept{
         ::test::detail::unit_functions[index]();
     }catch(char const* c_str){
         exception_what=c_str;
-    }catch(::std::string_view const& string_view){
-        exception_what=string_view;
     }catch(::std::string const& string){
         exception_what=string;
     }catch(::std::exception const& exception){
