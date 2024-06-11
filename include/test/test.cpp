@@ -55,17 +55,16 @@ bool unit_push(
     ::std::string const& unit_name,
     ::std::function<void(void)> const& unit_function
 )noexcept{
-    if(::test::detail::unit_name_to_index.count(unit_name)==0){
-        ::test::detail::unit_names.emplace_back(unit_name);
-        ::test::detail::unit_functions.emplace_back(unit_function);
-        ::test::detail::unit_name_to_index.emplace(
-            unit_name
-            ,::test::detail::unit_name_to_index.size()
-        );
-        return true;
-    }else{
+    if(::test::detail::unit_name_to_index.count(unit_name)!=0){
         return false;
     }
+    ::test::detail::unit_names.emplace_back(unit_name);
+    ::test::detail::unit_functions.emplace_back(unit_function);
+    ::test::detail::unit_name_to_index.emplace(
+        unit_name
+        ,::test::detail::unit_name_to_index.size()
+    );
+    return true;
 }
 void error_push(
     ::std::string const& file
