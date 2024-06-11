@@ -99,16 +99,16 @@ void exec(void)noexcept{
         timer.start();
         try{
             ::test::detail::unit_functions[index]();
-        }catch(::std::exception const& exception){
-            exception_what=exception.what();
-        }catch(::std::string const& string){
-            exception_what=string;
-        }catch(::std::string_view const& string_view){
-            exception_what=string_view;
         }catch(char const* c_str){
             exception_what=c_str;
+        }catch(::std::string_view const& string_view){
+            exception_what=string_view;
+        }catch(::std::string const& string){
+            exception_what=string;
+        }catch(::std::exception const& exception){
+            exception_what=exception.what();
         }catch(...){
-            exception_what="unknown exception!";
+            exception_what="unknown exception.";
         }
         timer.stop();
         unit_is_pass=exception_what.empty()&&::test::detail::unit_errors.empty();
@@ -156,14 +156,14 @@ void exec(std::string_view const& unit_name)noexcept{
     timer.start();
     try{
         ::test::detail::unit_functions[index]();
-    }catch(::std::exception const& exception){
-        exception_what=exception.what();
-    }catch(::std::string const& string){
-        exception_what=string;
-    }catch(::std::string_view const& string_view){
-        exception_what=string_view;
     }catch(char const* c_str){
         exception_what=c_str;
+    }catch(::std::string_view const& string_view){
+        exception_what=string_view;
+    }catch(::std::string const& string){
+        exception_what=string;
+    }catch(::std::exception const& exception){
+        exception_what=exception.what();
     }catch(...){
         exception_what="unknown exception.";
     }
