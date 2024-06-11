@@ -50,9 +50,9 @@ static ::std::unordered_map<::std::string_view,::std::size_t> unit_name_to_index
 static ::std::size_t unit_count=0;
 static ::std::size_t unit_fail_count=0;
 static ::std::size_t unit_pass_count=0;
-static ::std::size_t case_count=0;
-static ::std::size_t case_fail_count=0;
-static ::std::size_t case_pass_count=0;
+static ::std::size_t expr_count=0;
+static ::std::size_t expr_fail_count=0;
+static ::std::size_t expr_pass_count=0;
 bool unit_add(
     ::std::string_view const& unit_name,
     ::std::function<void(void)> const& unit_function
@@ -69,14 +69,14 @@ bool unit_add(
 void throw_error(::std::runtime_error const& runtime_error)noexcept{
     ::test::detail::unit_errors.emplace_back(runtime_error);
 }
-void case_count_incement(void)noexcept{
-    ++::test::detail::case_count;
+void expr_count_incement(void)noexcept{
+    ++::test::detail::expr_count;
 }
-void case_fail_count_increment(void)noexcept{
-    ++::test::detail::case_fail_count;
+void expr_fail_count_increment(void)noexcept{
+    ++::test::detail::expr_fail_count;
 }
-void case_pass_count_increment(void)noexcept{
-    ++::test::detail::case_pass_count;
+void expr_pass_count_increment(void)noexcept{
+    ++::test::detail::expr_pass_count;
 }
 }//namespace test::detail
 void exec(void)noexcept{
@@ -93,9 +93,9 @@ void exec(void)noexcept{
         ++index
     ){
         unit_is_pass=false;
-        ::test::detail::case_count=0;
-        ::test::detail::case_pass_count=0;
-        ::test::detail::case_fail_count=0;
+        ::test::detail::expr_count=0;
+        ::test::detail::expr_pass_count=0;
+        ::test::detail::expr_fail_count=0;
         timer.start();
         try{
             ::test::detail::unit_functions[index]();
@@ -115,9 +115,9 @@ void exec(void)noexcept{
         ::std::cout<<"[test::UNIT] "<<::test::detail::unit_names[index]
             <<" ["<<(unit_is_pass?"PASS":"FAIL")<<"] ("
             <<timer.delta_milliseconds()<<" ms)\n";
-        ::std::cout<<"\tcase:"<<::test::detail::case_count<<","
-            <<"pass:"<<::test::detail::case_pass_count<<","
-            <<"fail:"<<::test::detail::case_fail_count<<".\n";
+        ::std::cout<<"\texpr:"<<::test::detail::expr_count<<","
+            <<"pass:"<<::test::detail::expr_pass_count<<","
+            <<"fail:"<<::test::detail::expr_fail_count<<".\n";
         unit_errors_index=0;
         for(auto const& error: ::test::detail::unit_errors){
             ::std::cout<<"\t<fail> "<<unit_errors_index<<"\n";
@@ -125,7 +125,7 @@ void exec(void)noexcept{
             ++unit_errors_index;
         }
         if(!exception_what.empty()){
-            ::std::cout<<"\t<exce> \n\t\t<what> "<<exception_what<<"\n";
+            ::std::cout<<"\t<exce>\n\t\t<what> "<<exception_what<<"\n";
         }
         exception_what.clear();
         ::test::detail::unit_errors.clear();
@@ -149,9 +149,9 @@ void exec(std::string_view const& unit_name)noexcept{
     ::test::detail::Timer timer={};
     ::std::string exception_what={};
     bool unit_is_pass=false;
-    ::test::detail::case_count=0;
-    ::test::detail::case_pass_count=0;
-    ::test::detail::case_fail_count=0;
+    ::test::detail::expr_count=0;
+    ::test::detail::expr_pass_count=0;
+    ::test::detail::expr_fail_count=0;
     ::test::detail::unit_errors.clear();
     timer.start();
     try{
@@ -172,9 +172,9 @@ void exec(std::string_view const& unit_name)noexcept{
     ::std::cout<<"[test::UNIT] "<<::test::detail::unit_names[index]
         <<" ["<<(unit_is_pass?"PASS":"FAIL")<<"] ("
         <<timer.delta_milliseconds()<<" ms)\n";
-    ::std::cout<<"\tcase:"<<::test::detail::case_count<<","
-        <<"pass:"<<::test::detail::case_pass_count<<","
-        <<"fail:"<<::test::detail::case_fail_count<<".\n";
+    ::std::cout<<"\texpr:"<<::test::detail::expr_count<<","
+        <<"pass:"<<::test::detail::expr_pass_count<<","
+        <<"fail:"<<::test::detail::expr_fail_count<<".\n";
     ::std::size_t unit_errors_index=0;
     for(auto const& error: ::test::detail::unit_errors){
         ::std::cout<<"\t<fail> "<<unit_errors_index<<"\n";
@@ -182,7 +182,7 @@ void exec(std::string_view const& unit_name)noexcept{
         ++unit_errors_index;
     }
     if(!exception_what.empty()){
-        ::std::cout<<"\t<exce> \n\t\t<what> "<<exception_what<<"\n";
+        ::std::cout<<"\t<exce>\n\t\t<what> "<<exception_what<<"\n";
     }
     ::test::detail::unit_errors.clear();
 }

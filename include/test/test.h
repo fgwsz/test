@@ -12,9 +12,9 @@ bool unit_add(
     ::std::function<void(void)> const& unit_function
 )noexcept;
 void throw_error(::std::runtime_error const& runtime_error)noexcept;
-void case_count_incement(void)noexcept;
-void case_fail_count_increment(void)noexcept;
-void case_pass_count_increment(void)noexcept;
+void expr_count_incement(void)noexcept;
+void expr_fail_count_increment(void)noexcept;
+void expr_pass_count_increment(void)noexcept;
 }//namespace test::detail
 }//namespace test
 //public
@@ -30,17 +30,17 @@ void case_pass_count_increment(void)noexcept;
     void test_unit_function_of_##unit_name__(void)         \
 //
 //public
-#define TEST_CASE(...) do{                                 \
-    ::test::detail::case_count_incement();                 \
+#define TEST_EXPR(...) do{                                 \
+    ::test::detail::expr_count_incement();                 \
     if(!(__VA_ARGS__)){                                    \
-        ::test::detail::case_fail_count_increment();       \
+        ::test::detail::expr_fail_count_increment();       \
         ::test::detail::throw_error(::std::runtime_error(  \
             "\t\t<file> "+::std::string(__FILE__)+"\n"     \
             "\t\t<line> "+::std::to_string(__LINE__)+"\n"  \
-            "\t\t<case> "+::std::string(#__VA_ARGS__)      \
+            "\t\t<expr> "+::std::string(#__VA_ARGS__)      \
         ));                                                \
     }else{                                                 \
-        ::test::detail::case_pass_count_increment();       \
+        ::test::detail::expr_pass_count_increment();       \
     }                                                      \
 }while(0)                                                  \
 //

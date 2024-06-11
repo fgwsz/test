@@ -1,6 +1,7 @@
+#!/bin/bash
 echo "You Can Input q For Abort."
-$commit_info=Read-Host -Prompt "Input Git Commit Info"
-if(!($commit_info -eq "q")){
+read -p "Input Git Commit Info: " commit_info
+if [ "$commit_info" != "q" ]; then
     git add -f bin/.gitkeep
     git add -f build/.gitkeep
     git add -f vendor/.gitkeep
@@ -21,6 +22,6 @@ if(!($commit_info -eq "q")){
     git add build*.sh
     git add clean.ps1
     git add clean.sh
-    git commit -m $commit_info
+    git commit -m "$commit_info"
     git push
-}
+fi
