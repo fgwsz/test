@@ -1,4 +1,4 @@
-#include<test/test.h>
+#include<test/test.hpp>
 TEST_UNIT(hello){
     TEST_EXPR(1+1==2);
     TEST_EXPR(1+2==3);
