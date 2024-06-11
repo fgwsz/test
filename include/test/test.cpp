@@ -1,12 +1,11 @@
 #include"test.hpp"
 #include<cstddef>//::std::size_t
+#include<cstdio>//::std::printf
 #include<chrono>//::std::chrono
 #include<ratio>//::std::ratio
 #include<vector>//::std::vector
 #include<unordered_map>//::std::unordered_map
 #include<exception>//::std::exception
-#include<stdexcept>//::std::runtime_error
-#include<iostream>//::std::cout
 namespace test{
 namespace detail{
 class Timer{
@@ -47,11 +46,8 @@ public:
 };
 static ::std::vector<::std::string> unit_names={};
 static ::std::vector<::std::function<void(void)>> unit_functions={};
-static ::std::vector<::std::runtime_error> unit_errors={};
+static ::std::vector<::std::string> unit_errors={};
 static ::std::unordered_map<::std::string,::std::size_t> unit_name_to_index={};
-static ::std::size_t unit_count=0;
-static ::std::size_t unit_fail_count=0;
-static ::std::size_t unit_pass_count=0;
 static ::std::size_t expr_count=0;
 static ::std::size_t expr_fail_count=0;
 static ::std::size_t expr_pass_count=0;
@@ -59,14 +55,17 @@ bool unit_push(
     ::std::string const& unit_name,
     ::std::function<void(void)> const& unit_function
 )noexcept{
-    ::test::detail::unit_names.emplace_back(unit_name);
-    ::test::detail::unit_functions.emplace_back(unit_function);
-    ::test::detail::unit_name_to_index.emplace(
-        unit_name
-        ,::test::detail::unit_name_to_index.size()
-    );
-    ++::test::detail::unit_count;
-    return true;
+    if(::test::detail::unit_name_to_index.count(unit_name)==0){
+        ::test::detail::unit_names.emplace_back(unit_name);
+        ::test::detail::unit_functions.emplace_back(unit_function);
+        ::test::detail::unit_name_to_index.emplace(
+            unit_name
+            ,::test::detail::unit_name_to_index.size()
+        );
+        return true;
+    }else{
+        return false;
+    }
 }
 void error_push(
     ::std::string const& file
@@ -74,11 +73,9 @@ void error_push(
     ,::std::string const& expr
 )noexcept{
     ::test::detail::unit_errors.emplace_back(
-        ::std::runtime_error(
-            "\t\t<file> "+file
-            +"\n\t\t<line> "+line
-            +"\n\t\t<expr> "+expr
-        )
+        "\t\t<file> "+file
+        +"\n\t\t<line> "+line
+        +"\n\t\t<expr> "+expr
     );
 }
 void expr_count_incement(void)noexcept{
@@ -90,108 +87,106 @@ void expr_fail_count_increment(void)noexcept{
 void expr_pass_count_increment(void)noexcept{
     ++::test::detail::expr_pass_count;
 }
+static bool exec(::std::size_t unit_index)noexcept{
+    ::test::detail::unit_errors.clear();
+    ::test::detail::expr_count=0;
+    ::test::detail::expr_pass_count=0;
+    ::test::detail::expr_fail_count=0;
+    bool unit_is_pass=false;
+    bool unit_has_exception=false;
+    ::std::string unit_exception_what={};
+    Timer unit_timer={};
+    auto catch_callback=[
+        &unit_timer
+        ,&unit_exception_what
+        ,&unit_has_exception
+    ](::std::string const& what){
+        unit_timer.stop();
+        unit_exception_what
+            .append("\"").append(what).append("\"");
+        unit_has_exception=true;
+    };
+    unit_timer.start();
+    try{
+        ::test::detail::unit_functions[unit_index]();
+    }catch(char const* c_str){
+        catch_callback(c_str);
+    }catch(::std::string const& string){
+        catch_callback(string);
+    }catch(::std::exception const& exception){
+        catch_callback(exception.what());
+    }catch(...){
+        catch_callback("unknown exception.");
+    }
+    if(!unit_has_exception){
+        unit_timer.stop();
+    }
+    unit_is_pass=(!unit_has_exception)
+        &&::test::detail::unit_errors.empty();
+    ::std::printf(
+        "[test::unit \"%s\"] [%s] (%f ms)\n"
+        "\texpr:%zu,pass:%zu,fail:%zu.\n"
+        ,::test::detail::unit_names[unit_index].c_str()
+        ,::std::string(unit_is_pass?"pass":"fail").c_str()
+        ,unit_timer.delta_milliseconds()
+        ,::test::detail::expr_count
+        ,::test::detail::expr_pass_count
+        ,::test::detail::expr_fail_count
+    );
+    for(
+        ::std::size_t index=0;
+        index<::test::detail::unit_errors.size();
+        ++index
+    ){
+        ::std::printf(
+            "\t<fail> %zu\n"
+            "%s\n"
+            ,index
+            ,::test::detail::unit_errors[index].c_str()
+        );
+    }
+    if(unit_has_exception){
+        ::std::printf(
+            "\t<exce>\n"
+            "\t\t<what> %s\n"
+            ,unit_exception_what.c_str()
+        );
+    }
+    return unit_is_pass;
+}
 }//namespace test::detail
 void exec(void)noexcept{
-    ::test::detail::Timer timer={};
-    ::std::string exception_what={};
-    bool unit_is_pass=false;
-    ::test::detail::unit_pass_count=0;
-    ::test::detail::unit_fail_count=0;
-    ::test::detail::unit_errors.clear();
-    ::std::size_t unit_errors_index=0;
+    ::std::size_t unit_count=0;
+    ::std::size_t unit_pass_count=0;
+    ::std::size_t unit_fail_count=0;
     for(
         ::std::size_t index=0;
         index<::test::detail::unit_functions.size();
         ++index
     ){
-        unit_is_pass=false;
-        ::test::detail::expr_count=0;
-        ::test::detail::expr_pass_count=0;
-        ::test::detail::expr_fail_count=0;
-        timer.start();
-        try{
-            ::test::detail::unit_functions[index]();
-        }catch(char const* c_str){
-            exception_what=c_str;
-        }catch(::std::string const& string){
-            exception_what=string;
-        }catch(::std::exception const& exception){
-            exception_what=exception.what();
-        }catch(...){
-            exception_what="unknown exception.";
-        }
-        timer.stop();
-        unit_is_pass=exception_what.empty()&&::test::detail::unit_errors.empty();
-        ::std::cout<<"[test::UNIT] "<<::test::detail::unit_names[index]
-            <<" ["<<(unit_is_pass?"PASS":"FAIL")<<"] ("
-            <<timer.delta_milliseconds()<<" ms)\n";
-        ::std::cout<<"\texpr:"<<::test::detail::expr_count<<","
-            <<"pass:"<<::test::detail::expr_pass_count<<","
-            <<"fail:"<<::test::detail::expr_fail_count<<".\n";
-        unit_errors_index=0;
-        for(auto const& error: ::test::detail::unit_errors){
-            ::std::cout<<"\t<fail> "<<unit_errors_index<<"\n";
-            ::std::cout<<error.what()<<"\n";
-            ++unit_errors_index;
-        }
-        if(!exception_what.empty()){
-            ::std::cout<<"\t<exce>\n\t\t<what> "<<exception_what<<"\n";
-        }
-        exception_what.clear();
-        ::test::detail::unit_errors.clear();
-        if(unit_is_pass){
-            ++::test::detail::unit_pass_count;
+        if(::test::detail::exec(index)){
+            ++unit_pass_count;
         }else{
-            ++::test::detail::unit_fail_count;
+            ++unit_fail_count;
         }
+        ++unit_count;
     }
-    ::std::cout<<"[test::TOTAL]\n";
-    ::std::cout<<"\tunit:"<<::test::detail::unit_count<<","
-        <<"pass:"<<::test::detail::unit_pass_count<<","
-        <<"fail:"<<::test::detail::unit_fail_count<<".\n";
+    ::std::printf(
+        "[test::all]\n"
+        "\tunit:%zu,pass:%zu,fail:%zu.\n"
+        ,unit_count
+        ,unit_pass_count
+        ,unit_fail_count
+    );
 }
 void exec(std::string const& unit_name)noexcept{
     if(::test::detail::unit_name_to_index.count(unit_name)==0){
-        ::std::cout<<"[test::UNIT] "<<unit_name<<" can't be found.\n";
+        ::std::printf(
+            "[test::unit \"%s\"] can't be found.\n"
+            ,unit_name.c_str()
+        );
         return;
     }
-    ::std::size_t index=::test::detail::unit_name_to_index[unit_name];
-    ::test::detail::Timer timer={};
-    ::std::string exception_what={};
-    bool unit_is_pass=false;
-    ::test::detail::expr_count=0;
-    ::test::detail::expr_pass_count=0;
-    ::test::detail::expr_fail_count=0;
-    ::test::detail::unit_errors.clear();
-    timer.start();
-    try{
-        ::test::detail::unit_functions[index]();
-    }catch(char const* c_str){
-        exception_what=c_str;
-    }catch(::std::string const& string){
-        exception_what=string;
-    }catch(::std::exception const& exception){
-        exception_what=exception.what();
-    }catch(...){
-        exception_what="unknown exception.";
-    }
-    timer.stop();
-    unit_is_pass=exception_what.empty()&&::test::detail::unit_errors.empty();
-    ::std::cout<<"[test::UNIT] "<<::test::detail::unit_names[index]
-        <<" ["<<(unit_is_pass?"PASS":"FAIL")<<"] ("
-        <<timer.delta_milliseconds()<<" ms)\n";
-    ::std::cout<<"\texpr:"<<::test::detail::expr_count<<","
-        <<"pass:"<<::test::detail::expr_pass_count<<","
-        <<"fail:"<<::test::detail::expr_fail_count<<".\n";
-    ::std::size_t unit_errors_index=0;
-    for(auto const& error: ::test::detail::unit_errors){
-        ::std::cout<<"\t<fail> "<<unit_errors_index<<"\n";
-        ::std::cout<<error.what()<<"\n";
-        ++unit_errors_index;
-    }
-    if(!exception_what.empty()){
-        ::std::cout<<"\t<exce>\n\t\t<what> "<<exception_what<<"\n";
-    }
-    ::test::detail::unit_errors.clear();
+    ::test::detail::exec(::test::detail::unit_name_to_index[unit_name]);
 }
 }//namespace test
