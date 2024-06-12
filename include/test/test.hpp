@@ -8,8 +8,8 @@ bool case_register(
     ::std::string const& case_name
     ,::std::function<void(void)> const& case_function
 )noexcept;
-void exec(void)noexcept;
-void exec(::std::string const& case_name)noexcept;
+void execute(void)noexcept;
+void execute(::std::string const& case_name)noexcept;
 class Timer{
 public:
     Timer(void)noexcept;

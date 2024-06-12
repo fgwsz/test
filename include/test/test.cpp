@@ -121,7 +121,7 @@ void check_failed_count_increment(void)noexcept{
 void check_passed_count_increment(void)noexcept{
     ++::test::detail::check_passed_count;
 }
-static bool exec(::std::size_t case_index)noexcept{
+static bool execute(::std::size_t case_index)noexcept{
     ::test::detail::case_errors.clear();
     ::test::detail::check_count=0;
     ::test::detail::check_passed_count=0;
@@ -190,7 +190,7 @@ static bool exec(::std::size_t case_index)noexcept{
     return case_is_passed;
 }
 }//namespace test::detail
-void exec(void)noexcept{
+void execute(void)noexcept{
     ::std::size_t case_count=0;
     ::std::size_t case_passed_count=0;
     ::std::size_t case_failed_count=0;
@@ -199,7 +199,7 @@ void exec(void)noexcept{
         index<::test::detail::case_functions.size();
         ++index
     ){
-        if(::test::detail::exec(index)){
+        if(::test::detail::execute(index)){
             ++case_passed_count;
         }else{
             ++case_failed_count;
@@ -214,7 +214,7 @@ void exec(void)noexcept{
         ,case_failed_count
     );
 }
-void exec(std::string const& case_name)noexcept{
+void execute(std::string const& case_name)noexcept{
     if(::test::detail::case_name_to_index.count(case_name)==0){
         ::std::printf(
             "[test::case \"%s\"] can't be found.\n"
@@ -222,6 +222,6 @@ void exec(std::string const& case_name)noexcept{
         );
         return;
     }
-    ::test::detail::exec(::test::detail::case_name_to_index[case_name]);
+    ::test::detail::execute(::test::detail::case_name_to_index[case_name]);
 }
 }//namespace test

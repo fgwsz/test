@@ -121,8 +121,8 @@ TEST_CASE(empty_std_exception){
     throw ::std::runtime_error{""};
 }
 int main(int argc,char* argv[]){
-    ::test::exec();
-    ::test::exec("check_passed");
-    ::test::exec("undefined");
+    ::test::execute();
+    ::test::execute("check_passed");
+    ::test::execute("undefined");
     return 0;
 }
