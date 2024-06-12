@@ -104,6 +104,12 @@ void check_passed_count_increment(void)noexcept;
 //public
 #define TEST_CHECK_LE(lhs__,rhs__) TEST_CHECK_OP(<=,lhs__,rhs__)
 //public
+#define TEST_CHECK_AND(lhs__,rhs__) TEST_CHECK_OP(&&,lhs__,rhs__)
+//public
+#define TEST_CHECK_OR(lhs__,rhs__) TEST_CHECK_OP(||,lhs__,rhs__)
+//public
+#define TEST_CHECK_NOT(...) TEST_CHECK(!(__VA_ARGS__))
+//public
 #define TEST_ASSERT(...) do{                               \
     if(!(__VA_ARGS__)){                                    \
         ::test::detail::assert_failed(                     \
@@ -144,3 +150,9 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT_LT(lhs__,rhs__) TEST_ASSERT_OP(<,lhs__,rhs__)
 //public
 #define TEST_ASSERT_LE(lhs__,rhs__) TEST_ASSERT_OP(<=,lhs__,rhs__)
+//public
+#define TEST_ASSERT_AND(lhs__,rhs__) TEST_ASSERT_OP(&&,lhs__,rhs__)
+//public
+#define TEST_ASSERT_OR(lhs__,rhs__) TEST_ASSERT_OP(||,lhs__,rhs__)
+//public
+#define TEST_ASSERT_NOT(...) TEST_ASSERT(!(__VA_ARGS__))

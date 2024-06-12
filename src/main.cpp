@@ -1,5 +1,27 @@
 #include<test/test.hpp>
 #include<stdexcept>//::std::runtime_error
+TEST_CASE(c_str_exception){
+    throw "c_str exception";
+}
+TEST_CASE(string_exception){
+    throw "string exception";
+}
+TEST_CASE(std_exception){
+    throw ::std::runtime_error{"std::exception"};
+}
+TEST_CASE(unknown_exception){
+    struct Foo{};
+    throw Foo{};
+}
+TEST_CASE(empty_c_str_exception){
+    throw "";
+}
+TEST_CASE(empty_string_exception){
+    throw ::std::string{""};
+}
+TEST_CASE(empty_std_exception){
+    throw ::std::runtime_error{""};
+}
 TEST_CASE(check_passed){
     TEST_CHECK(1==1);
     TEST_CHECK(2!=1);
@@ -25,6 +47,9 @@ TEST_CASE(check_passed){
     TEST_CHECK_LT(1,2);
     TEST_CHECK_LE(1,2);
     TEST_CHECK_LE(1,1);
+    TEST_CHECK_AND(true,true);
+    TEST_CHECK_OR(false,true);
+    TEST_CHECK_NOT(false);
 }
 TEST_CASE(check_failed){
     TEST_CHECK(!(1==1));
@@ -47,6 +72,9 @@ TEST_CASE(check_failed){
     TEST_CHECK_GE(1,2);
     TEST_CHECK_LT(1,1);
     TEST_CHECK_LE(2,1);
+    TEST_CHECK_AND(true,false);
+    TEST_CHECK_OR(false,false);
+    TEST_CHECK_NOT(true);
 }
 TEST_CASE(assert_passed){
     TEST_ASSERT(1==1);
@@ -73,11 +101,14 @@ TEST_CASE(assert_passed){
     TEST_ASSERT_LT(1,2);
     TEST_ASSERT_LE(1,2);
     TEST_ASSERT_LE(1,1);
+    TEST_ASSERT_AND(true,true);
+    TEST_ASSERT_OR(false,true);
+    TEST_ASSERT_NOT(false);
 }
 TEST_CASE(assert_failed){
     TEST_CHECK(1==1);
     TEST_CHECK(2!=1);
-    TEST_ASSERT(!(1==1));
+    //TEST_ASSERT(!(1==1));
     //TEST_ASSERT(!(2!=1));
     //TEST_ASSERT(!(2>1));
     //TEST_ASSERT(!(2>=1));
@@ -97,28 +128,9 @@ TEST_CASE(assert_failed){
     //TEST_ASSERT_GE(1,2);
     //TEST_ASSERT_LT(1,1);
     //TEST_ASSERT_LE(2,1);
-}
-TEST_CASE(c_str_exception){
-    throw "c_str exception";
-}
-TEST_CASE(string_exception){
-    throw "string exception";
-}
-TEST_CASE(std_exception){
-    throw ::std::runtime_error{"std::exception"};
-}
-TEST_CASE(unknown_exception){
-    struct Foo{};
-    throw Foo{};
-}
-TEST_CASE(empty_c_str_exception){
-    throw "";
-}
-TEST_CASE(empty_string_exception){
-    throw ::std::string{""};
-}
-TEST_CASE(empty_std_exception){
-    throw ::std::runtime_error{""};
+    //TEST_ASSERT_AND(true,false);
+    //TEST_ASSERT_OR(false,false);
+    TEST_ASSERT_NOT(true);
 }
 int main(int argc,char* argv[]){
     ::test::execute();
