@@ -1,5 +1,4 @@
 #include<test/test.hpp>
-#include<stdexcept>//::std::runtime_error
 TEST_CASE(c_str_exception){
     throw "c_str exception";
 }
