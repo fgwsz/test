@@ -256,13 +256,9 @@ void execute_case_all(void)noexcept{
     ::std::printf("[test::execute_case_all()] [end]\n");
 }
 void execute_case(std::string const& case_name)noexcept{
-    ::std::printf(
-        "[test::execute_case(\"%s\")] [begin]\n"
-        ,case_name.c_str()
-    );
     if(::test::detail::case_name_to_index.count(case_name)==0){
         ::std::printf(
-            "[test::case \"%s\"] can't be found.\n"
+            "[test::case \"%s\"] [failed] can't be found.\n"
             ,case_name.c_str()
         );
     }else{
@@ -270,10 +266,6 @@ void execute_case(std::string const& case_name)noexcept{
             ::test::detail::case_name_to_index[case_name]
         );
     }
-    ::std::printf(
-        "[test::execute_case(\"%s\")] [end]\n"
-        ,case_name.c_str()
-    );
 }
 void execute_group(::std::string const& group_name)noexcept{
     if(::test::detail::group_name_to_index.count(group_name)==0){
