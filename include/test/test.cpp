@@ -1,5 +1,4 @@
 #include"test.hpp"
-#include<cstddef>//::std::size_t
 #include<cstdio>//::std::printf
 #include<ratio>//::std::ratio
 #include<unordered_map>//::std::unordered_map

@@ -1,4 +1,5 @@
 #pragma once
+#include<cstddef>//::std::size_t
 #include<string>//::std::string
 #include<functional>//::std::function
 #include<vector>//::std::vector
