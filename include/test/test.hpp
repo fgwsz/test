@@ -1,24 +1,41 @@
 #pragma once
 #include<string>//::std::string ::std::to_string
 #include<functional>//::std::function
+#include<memory>//::std::unique_ptr
 #include<sstream>//::std::ostringstream
 namespace test{
-void exec(void)noexcept;
-void exec(::std::string const& case_name)noexcept;
-namespace detail{
-bool case_push(
+bool case_register(
     ::std::string const& case_name
     ,::std::function<void(void)> const& case_function
 )noexcept;
-void error_push(
+void exec(void)noexcept;
+void exec(::std::string const& case_name)noexcept;
+class Timer{
+public:
+    Timer(void)noexcept;
+    ~Timer(void)noexcept;
+    void start(void)noexcept;
+    void stop(void)noexcept;
+    double delta_nanoseconds(void)noexcept;
+    double delta_microseconds(void)noexcept;
+    double delta_milliseconds(void)noexcept;
+    double delta_seconds(void)noexcept;
+    double delta_minutes(void)noexcept;
+    double delta_hours(void)noexcept;
+private:
+    class Impl;
+    ::std::unique_ptr<Impl> pimpl_;
+};
+namespace detail{
+void check_failed(
     ::std::string const& file
     ,::std::string const& line
-    ,::std::string const& check
+    ,::std::string const& info
 )noexcept;
 void assert_failed(
     ::std::string const& file
     ,::std::string const& line
-    ,::std::string const& check
+    ,::std::string const& info
 );
 void check_count_incement(void)noexcept;
 void check_failed_count_increment(void)noexcept;
@@ -28,8 +45,8 @@ void check_passed_count_increment(void)noexcept;
 //public
 #define TEST_CASE(case_name__)                             \
     static void test_case_function_of_##case_name__(void); \
-    static bool test_case_register_of_##case_name__=       \
-        ::test::detail::case_push(                         \
+    static bool test_case_is_registered_of_##case_name__=  \
+        ::test::case_register(                             \
             #case_name__,                                  \
             ::std::function<void(void)>{                   \
                 test_case_function_of_##case_name__        \
@@ -42,7 +59,7 @@ void check_passed_count_increment(void)noexcept;
     ::test::detail::check_count_incement();                \
     if(!(__VA_ARGS__)){                                    \
         ::test::detail::check_failed_count_increment();    \
-        ::test::detail::error_push(                        \
+        ::test::detail::check_failed(                      \
             __FILE__                                       \
             ,::std::to_string(__LINE__)                    \
             ,#__VA_ARGS__                                  \
@@ -64,7 +81,7 @@ void check_passed_count_increment(void)noexcept;
         ss<<(rhs__);                                       \
         ::std::string rhs_string=ss.str();                 \
         ::test::detail::check_failed_count_increment();    \
-        ::test::detail::error_push(                        \
+        ::test::detail::check_failed(                      \
             __FILE__                                       \
             ,::std::to_string(__LINE__)                    \
             ,lhs_string+" "#operator__" "+rhs_string       \
