@@ -132,15 +132,28 @@ TEST_CASE(assert_failed){
     //TEST_ASSERT_OR(false,false);
     TEST_ASSERT_NOT(true);
 }
-TEST_GROUP(a_group){
+TEST_GROUP(passed_group){
     TEST_GROUP_ELEMENT(check_passed);
     TEST_GROUP_ELEMENT(assert_passed);
+}
+TEST_GROUP(failed_group){
+    TEST_GROUP_ELEMENT(c_str_exception);
+    TEST_GROUP_ELEMENT(string_exception);
+    TEST_GROUP_ELEMENT(std_exception);
+    TEST_GROUP_ELEMENT(unknown_exception);
+    TEST_GROUP_ELEMENT(empty_c_str_exception);
+    TEST_GROUP_ELEMENT(empty_string_exception);
+    TEST_GROUP_ELEMENT(empty_std_exception);
+    TEST_GROUP_ELEMENT(check_failed);
+    TEST_GROUP_ELEMENT(assert_failed);
     TEST_GROUP_ELEMENT(undefined);
 }
 int main(int argc,char* argv[]){
-    ::test::execute_case_all();
     ::test::execute_case("check_passed");
     ::test::execute_case("undefined");
-    ::test::execute_group("a_group");
+    ::test::execute_case_all();
+    ::test::execute_group("passed_group");
+    ::test::execute_group("undefined");
+    ::test::execute_group_all();
     return 0;
 }
