@@ -1,9 +1,7 @@
 #include"test.hpp"
 #include<cstddef>//::std::size_t
 #include<cstdio>//::std::printf
-#include<chrono>//::std::chrono
 #include<ratio>//::std::ratio
-#include<vector>//::std::vector
 #include<unordered_map>//::std::unordered_map
 #include<exception>//::std::exception
 namespace test{
@@ -12,6 +10,9 @@ static ::std::vector<::std::string> case_names={};
 static ::std::vector<::std::function<void(void)>> case_functions={};
 static ::std::vector<::std::string> case_errors={};
 static ::std::unordered_map<::std::string,::std::size_t> case_name_to_index={};
+static ::std::vector<::std::string> group_names={};
+static ::std::vector<::std::vector<::std::string>> group_bodys={};
+static ::std::unordered_map<::std::string,::std::size_t> group_name_to_index={};
 static ::std::size_t check_count=0;
 static ::std::size_t check_failed_count=0;
 static ::std::size_t check_passed_count=0;
@@ -31,51 +32,58 @@ bool case_register(
     );
     return true;
 }
-class Timer::Impl{
-public:
-    using clock=::std::chrono::high_resolution_clock;
-    using time_point=typename clock::time_point;
-    time_point begin_,end_;
-    void start(void)noexcept{
-        this->begin_=clock::now();
+bool group_register(
+    ::std::string const& group_name
+    ,::std::vector<::std::string> const& group_body
+)noexcept{
+    if(::test::detail::group_name_to_index.count(group_name)!=0){
+        return false;
     }
-    void stop(void)noexcept{
-        this->end_=clock::now();
-    }
-    template<typename Period>
-    double delta()noexcept{
+    ::test::detail::group_names.emplace_back(group_name);
+    ::test::detail::group_bodys.emplace_back(group_body);
+    ::test::detail::group_name_to_index.emplace(
+        group_name
+        ,::test::detail::group_name_to_index.size()
+    );
+    return true;
+}
+namespace detail{
+    template<typename Period,typename TimePoint>
+    double delta(TimePoint const& begin,TimePoint const& end)noexcept{
         return ::std::chrono::duration_cast<
             ::std::chrono::duration<double,Period>
-        >(this->end_-this->begin_).count();
+        >(end-begin).count();
     }
-};
-Timer::Timer(void)noexcept
-    :pimpl_(::std::unique_ptr<Timer::Impl>(new Timer::Impl{}))
-{}
-Timer::~Timer(void)noexcept=default;
+}//namespace test::detail
 void Timer::start(void)noexcept{
-    this->pimpl_->start();
+    this->begin_=Timer::clock::now();
 }
 void Timer::stop(void)noexcept{
-    this->pimpl_->stop();
+    this->end_=Timer::clock::now();
 }
 double Timer::delta_nanoseconds(void)noexcept{
-    return this->pimpl_->delta<::std::nano>();
+    return ::test::detail::delta<::std::nano,typename Timer::time_point>
+        (this->begin_,this->end_);
 }
 double Timer::delta_microseconds(void)noexcept{
-    return this->pimpl_->delta<::std::micro>();
+    return ::test::detail::delta<::std::micro,typename Timer::time_point>
+        (this->begin_,this->end_);
 }
 double Timer::delta_milliseconds(void)noexcept{
-    return this->pimpl_->delta<::std::milli>();
+    return ::test::detail::delta<::std::milli,typename Timer::time_point>
+        (this->begin_,this->end_);
 }
 double Timer::delta_seconds(void)noexcept{
-    return this->pimpl_->delta<::std::ratio<1>>();
+    return ::test::detail::delta<::std::ratio<1>,typename Timer::time_point>
+        (this->begin_,this->end_);
 }
 double Timer::delta_minutes(void)noexcept{
-    return this->pimpl_->delta<::std::ratio<60>>();
+    return ::test::detail::delta<::std::ratio<60>,typename Timer::time_point>
+        (this->begin_,this->end_);
 }
 double Timer::delta_hours(void)noexcept{
-    return this->pimpl_->delta<::std::ratio<3600>>();
+    return ::test::detail::delta<::std::ratio<3600>,typename Timer::time_point>
+        (this->begin_,this->end_);
 }
 namespace detail{
 void check_failed(
@@ -85,9 +93,9 @@ void check_failed(
 )noexcept{
     ::test::detail::case_errors.emplace_back(
         "[test::check] [failed]"
-        "\n\t\t\t<file> "+file
-        +"\n\t\t\t<line> "+line
-        +"\n\t\t\t<info> "+info
+        "\n\t\t<file> "+file
+        +"\n\t\t<line> "+line
+        +"\n\t\t<info> "+info
     );
 }
 class TestAssertFailedException:public ::std::exception{
@@ -107,9 +115,9 @@ void assert_failed(
 ){
     throw ::test::detail::TestAssertFailedException{
         "[test::assert] [failed]"
-        "\n\t\t\t<file> "+file
-        +"\n\t\t\t<line> "+line
-        +"\n\t\t\t<info> "+info
+        "\n\t\t<file> "+file
+        +"\n\t\t<line> "+line
+        +"\n\t\t<info> "+info
     };
 }
 void check_count_incement(void)noexcept{
@@ -121,7 +129,34 @@ void check_failed_count_increment(void)noexcept{
 void check_passed_count_increment(void)noexcept{
     ++::test::detail::check_passed_count;
 }
-static bool execute(::std::size_t case_index)noexcept{
+static void print_total_info(
+    ::std::string type
+    ,bool is_passed
+    ,::test::Timer timer
+    ,::std::string item_type
+    ,::std::size_t count
+    ,::std::size_t passed_count
+    ,::std::size_t failed_count
+)noexcept{
+    ::std::printf(
+        "[%s] [%s] (%f ms)\n"
+        "\t%s:%zu,passed:%zu,failed:%zu. (%f %%)\n"
+        ,type.c_str()
+        ,::std::string(is_passed?"passed":"failed").c_str()
+        ,timer.delta_milliseconds()
+        ,item_type.c_str()
+        ,count
+        ,passed_count
+        ,failed_count
+        ,(count==0
+            ?double{100}
+            :(static_cast<double>(passed_count)
+                /static_cast<double>(count)*double{100}))
+    );
+}
+static bool execute_case(
+    ::std::size_t case_index
+)noexcept{
     ::test::detail::case_errors.clear();
     ::test::detail::check_count=0;
     ::test::detail::check_passed_count=0;
@@ -158,12 +193,11 @@ static bool execute(::std::size_t case_index)noexcept{
     }
     case_is_passed=(!case_has_exception)
         &&::test::detail::case_errors.empty();
-    ::std::printf(
-        "\t[test::case \"%s\"] [%s] (%f ms)\n"
-        "\t\tcheck:%zu,passed:%zu,failed:%zu.\n"
-        ,::test::detail::case_names[case_index].c_str()
-        ,::std::string(case_is_passed?"passed":"failed").c_str()
-        ,case_timer.delta_milliseconds()
+    ::test::detail::print_total_info(
+        "test::case \""+::test::detail::case_names[case_index]+"\""
+        ,case_is_passed
+        ,case_timer
+        ,"check"
         ,::test::detail::check_count
         ,::test::detail::check_passed_count
         ,::test::detail::check_failed_count
@@ -174,24 +208,24 @@ static bool execute(::std::size_t case_index)noexcept{
         ++index
     ){
         ::std::printf(
-            "\t\t[test::error] %zu\n"
-            "\t\t\t%s\n"
+            "\t[test::error] %zu\n"
+            "\t\t%s\n"
             ,index
             ,::test::detail::case_errors[index].c_str()
         );
     }
     if(case_has_exception){
         ::std::printf(
-            "\t\t[exception]\n"
-            "\t\t\t%s\n"
+            "\t[exception]\n"
+            "\t\t%s\n"
             ,case_exception_what.c_str()
         );
     }
     return case_is_passed;
 }
 }//namespace test::detail
-void execute(void)noexcept{
-    ::std::printf("[test::execute()] [begin]\n");
+void execute_case_all(void)noexcept{
+    ::std::printf("[test::execute_case_all()] [begin]\n");
     ::std::size_t case_count=0;
     ::std::size_t case_passed_count=0;
     ::std::size_t case_failed_count=0;
@@ -202,7 +236,7 @@ void execute(void)noexcept{
         index<::test::detail::case_functions.size();
         ++index
     ){
-        if(::test::detail::execute(index)){
+        if(::test::detail::execute_case(index)){
             ++case_passed_count;
         }else{
             ++case_failed_count;
@@ -210,37 +244,90 @@ void execute(void)noexcept{
         ++case_count;
     }
     timer.stop();
-    ::std::printf(
-        "\t[test::all] [%s] (%f ms) \n"
-        "\t\tcase:%zu,passed:%zu,failed:%zu. (%f %%)\n"
-        ,::std::string(case_passed_count==case_count?"passed":"failed").c_str()
-        ,timer.delta_milliseconds()
+    ::test::detail::print_total_info(
+        "test::total"
+        ,case_passed_count==case_count
+        ,timer
+        ,"case"
         ,case_count
         ,case_passed_count
         ,case_failed_count
-        ,(case_count==0
-            ?double{100}
-            :(static_cast<double>(case_passed_count)
-                /static_cast<double>(case_count)*double{100}))
     );
-    ::std::printf("[test::execute()] [end]\n");
+    ::std::printf("[test::execute_case_all()] [end]\n");
 }
-void execute(std::string const& case_name)noexcept{
+void execute_case(std::string const& case_name)noexcept{
     ::std::printf(
-        "[test::execute(\"%s\")] [begin]\n"
+        "[test::execute_case(\"%s\")] [begin]\n"
         ,case_name.c_str()
     );
     if(::test::detail::case_name_to_index.count(case_name)==0){
         ::std::printf(
-            "\t[test::case \"%s\"] can't be found.\n"
+            "[test::case \"%s\"] can't be found.\n"
             ,case_name.c_str()
         );
     }else{
-        ::test::detail::execute(::test::detail::case_name_to_index[case_name]);
+        ::test::detail::execute_case(
+            ::test::detail::case_name_to_index[case_name]
+        );
     }
     ::std::printf(
-        "[test::execute(\"%s\")] [end]\n"
+        "[test::execute_case(\"%s\")] [end]\n"
         ,case_name.c_str()
+    );
+}
+void execute_group(::std::string const& group_name)noexcept{
+    if(::test::detail::group_name_to_index.count(group_name)==0){
+        ::std::printf(
+            "[test::group \"%s\"] [failed] can't be found.\n"
+            ,group_name.c_str()
+        );
+        return;
+    }
+    ::std::printf(
+        "[test::group \"%s\"] [begin]\n"
+        ,group_name.c_str()
+    );
+    ::std::size_t case_count=0;
+    ::std::size_t case_passed_count=0;
+    ::std::size_t case_failed_count=0;
+    ::test::Timer timer={};
+    auto const& group_body=::test::detail::group_bodys[
+        ::test::detail::group_name_to_index[group_name]
+    ];
+    timer.start();
+    for(auto const& case_name:group_body){
+        if(::test::detail::case_name_to_index.count(case_name)==0){
+            ::std::printf(
+                "[test::case \"%s\"] [failed] can't be found.\n"
+                ,case_name.c_str()
+            );
+            ++case_failed_count;
+        }else{
+            if(
+                ::test::detail::execute_case(
+                    ::test::detail::case_name_to_index[case_name]
+                )
+            ){
+                ++case_passed_count;
+            }else{
+                ++case_failed_count;
+            }
+        }
+        ++case_count;
+    }
+    timer.stop();
+    ::test::detail::print_total_info(
+        "test::total"
+        ,case_passed_count==case_count
+        ,timer
+        ,"case"
+        ,case_count
+        ,case_passed_count
+        ,case_failed_count
+    );
+    ::std::printf(
+        "[test::group \"%s\"] [end]\n"
+        ,group_name.c_str()
     );
 }
 }//namespace test

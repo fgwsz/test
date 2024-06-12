@@ -1,19 +1,24 @@
 #pragma once
 #include<string>//::std::string ::std::to_string
 #include<functional>//::std::function
-#include<memory>//::std::unique_ptr
+#include<vector>//::std::vector
+#include<chrono>//::std::chrono
 #include<sstream>//::std::ostringstream
 namespace test{
 bool case_register(
     ::std::string const& case_name
     ,::std::function<void(void)> const& case_function
 )noexcept;
-void execute(void)noexcept;
-void execute(::std::string const& case_name)noexcept;
+bool group_register(
+    ::std::string const& group_name
+    ,::std::vector<::std::string> const& group_body
+)noexcept;
+void execute_case_all(void)noexcept;
+void execute_case(::std::string const& case_name)noexcept;
+void execute_case(::std::vector<::std::string> const& case_names)noexcept;
+void execute_group(::std::string const& group_name)noexcept;
 class Timer{
 public:
-    Timer(void)noexcept;
-    ~Timer(void)noexcept;
     void start(void)noexcept;
     void stop(void)noexcept;
     double delta_nanoseconds(void)noexcept;
@@ -23,8 +28,9 @@ public:
     double delta_minutes(void)noexcept;
     double delta_hours(void)noexcept;
 private:
-    class Impl;
-    ::std::unique_ptr<Impl> pimpl_;
+    using clock=::std::chrono::high_resolution_clock;
+    using time_point=typename clock::time_point;
+    time_point begin_,end_;
 };
 namespace detail{
 void check_failed(
@@ -53,6 +59,30 @@ void check_passed_count_increment(void)noexcept;
             }                                              \
         );                                                 \
     void test_case_function_of_##case_name__(void)         \
+//
+//public
+#define TEST_GROUP(group_name__)                           \
+    static ::std::vector<::std::string>                    \
+        test_group_body_of_##group_name__={};              \
+    static void test_group_init_of_##group_name__(         \
+        ::std::vector<::std::string>& group=               \
+            test_group_body_of_##group_name__              \
+    )noexcept;                                             \
+    static bool test_group_is_init_of_##group_name__=[](){ \
+        test_group_init_of_##group_name__();               \
+        return ::test::group_register(                     \
+            #group_name__                                  \
+            ,test_group_body_of_##group_name__             \
+        );                                                 \
+    }();                                                   \
+    static void test_group_init_of_##group_name__(         \
+        ::std::vector<::std::string>& group                \
+    )noexcept                                              \
+//
+//public
+#define TEST_GROUP_ELEMENT(case_name__) do{                \
+    group.emplace_back(#case_name__);                      \
+}while(0)                                                  \
 //
 //public
 #define TEST_CHECK(...) do{                                \

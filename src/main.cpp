@@ -132,9 +132,15 @@ TEST_CASE(assert_failed){
     //TEST_ASSERT_OR(false,false);
     TEST_ASSERT_NOT(true);
 }
+TEST_GROUP(a_group){
+    TEST_GROUP_ELEMENT(check_passed);
+    TEST_GROUP_ELEMENT(assert_passed);
+    TEST_GROUP_ELEMENT(undefined);
+}
 int main(int argc,char* argv[]){
-    ::test::execute();
-    ::test::execute("check_passed");
-    ::test::execute("undefined");
+    ::test::execute_case_all();
+    ::test::execute_case("check_passed");
+    ::test::execute_case("undefined");
+    ::test::execute_group("a_group");
     return 0;
 }
