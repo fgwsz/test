@@ -1,13 +1,17 @@
 # test
-Unit testing library.
-## Language
-C++11
+Unit test library for C++11.
 ## Usage
-Copy the header file and source file from `include/test` to your project.
+Copy the directory `include/test` to your project.
 ### Include
 `#include "test/test.hpp"`
 ### API
-`::test::*`  
-`TEST_*`  
+#### Public
+namespace:`::test`  
+function/class:`::test::*`  
+macro:`TEST_*`  
+#### Private
+namespace:`::test::detail`
+function/class:`::test::detail::*`  
+macro:`__TEST_*`  
 ### Example
 Refer to `tests/test_test.hpp`.
