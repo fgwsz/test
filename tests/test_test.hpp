@@ -136,9 +136,18 @@ TEST_CASE(assert_failed){
     //TEST_ASSERT_OR(false,false);
     //TEST_ASSERT_NOT(true);
 }
+TEST_CASE(static_assert_passed){
+    TEST_STATIC_ASSERT(1+1==2);
+    TEST_STATIC_ASSERT_NOT(1+1==3);
+}
+TEST_CASE(static_assert_failed){
+    //TEST_STATIC_ASSERT(1+1==3);
+    //TEST_STATIC_ASSERT_NOT(1+1==2);
+}
 TEST_GROUP(passed_group){
     TEST_GROUP_ELEMENT(check_passed);
     TEST_GROUP_ELEMENT(assert_passed);
+    TEST_GROUP_ELEMENT(static_assert_passed);
 }
 TEST_GROUP(failed_group){
     TEST_GROUP_ELEMENT(c_str_exception);
@@ -150,6 +159,7 @@ TEST_GROUP(failed_group){
     TEST_GROUP_ELEMENT(empty_std_exception);
     TEST_GROUP_ELEMENT(check_failed);
     TEST_GROUP_ELEMENT(assert_failed);
+    TEST_GROUP_ELEMENT(static_assert_failed);
     TEST_GROUP_ELEMENT(undefined);
 }
 void test_test(void)noexcept{

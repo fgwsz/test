@@ -9,13 +9,13 @@ namespace test{
 namespace detail{
 class CheckFailedException:public ::std::exception{
     ::std::string file_;
-    ::std::size_t line_;
+    ::std::string line_;
     ::std::string info_;
     ::std::string what_;
 public:
     CheckFailedException(
         ::std::string const& file
-        ,::std::size_t line
+        ,::std::string const& line
         ,::std::string const& info
     )noexcept
         :file_(file)
@@ -25,7 +25,7 @@ public:
         this->what_=
             "[test::check] [failed]"
             +this->file_
-            +"("+::std::to_string(this->line_)+")"
+            +"("+this->line_+")"
             ":"+this->info_;
     }
     virtual char const* what(void)const noexcept override{
@@ -34,7 +34,7 @@ public:
     ::std::string const& file(void)const noexcept{
         return this->file_;
     }
-    ::std::size_t line(void)const noexcept{
+    ::std::string const& line(void)const noexcept{
         return this->line_;
     }
     ::std::string const& info(void)const noexcept{
@@ -43,13 +43,13 @@ public:
 };
 class AssertFailedException:public ::std::exception{
     ::std::string file_;
-    ::std::size_t line_;
+    ::std::string line_;
     ::std::string info_;
     ::std::string what_;
 public:
     AssertFailedException(
         ::std::string const& file
-        ,::std::size_t line
+        ,::std::string const& line
         ,::std::string const& info
     )noexcept
         :file_(file)
@@ -59,7 +59,7 @@ public:
         this->what_=
             "[test::assert] [failed]"
             +this->file_
-            +"("+::std::to_string(this->line_)+")"
+            +"("+this->line_+")"
             ":"+this->info_;
     }
     virtual char const* what()const noexcept override{
@@ -68,7 +68,7 @@ public:
     ::std::string const& file(void)const noexcept{
         return this->file_;
     }
-    ::std::size_t line(void)const noexcept{
+    ::std::string const& line(void)const noexcept{
         return this->line_;
     }
     ::std::string const& info(void)const noexcept{
@@ -203,7 +203,7 @@ static ::std::string nanoseconds_to_string(double ns)noexcept{
 namespace detail{
 void check_failed(
     ::std::string const& file
-    ,::std::size_t line
+    ,::std::string const& line
     ,::std::string const& info
 )noexcept{
     ::test::detail::case_errors.emplace_back(
@@ -212,7 +212,7 @@ void check_failed(
 }
 void assert_failed(
     ::std::string const& file
-    ,::std::size_t line
+    ,::std::string const& line
     ,::std::string const& info
 ){
     throw ::test::detail::AssertFailedException(file,line,info);
@@ -303,7 +303,7 @@ static bool execute_case(
                 +::std::string(tab_count+2,'\t')+"<file> "
                 +exception.file()+'\n'
                 +::std::string(tab_count+2,'\t')+"<line> "
-                +::std::to_string(exception.line())+'\n'
+                +exception.line()+'\n'
                 +::std::string(tab_count+2,'\t')+"<info> "
                 +exception.info()+'\n';
             case_has_exception=true;
@@ -346,13 +346,13 @@ static bool execute_case(
         format_string=
             ::std::string(tab_count+1,'\t')+"[test::check] [failed] %zu\n"
             +::std::string(tab_count+2,'\t')+"<file> %s\n"
-            +::std::string(tab_count+2,'\t')+"<line> %zu\n"
+            +::std::string(tab_count+2,'\t')+"<line> %s\n"
             +::std::string(tab_count+2,'\t')+"<info> %s\n";
         ::std::printf(
             format_string.c_str()
             ,index
             ,::test::detail::case_errors[index].file().c_str()
-            ,::test::detail::case_errors[index].line()
+            ,::test::detail::case_errors[index].line().c_str()
             ,::test::detail::case_errors[index].info().c_str()
         );
     }

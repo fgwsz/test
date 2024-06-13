@@ -40,12 +40,12 @@ private:
 namespace detail{
 void check_failed(
     ::std::string const& file
-    ,::std::size_t line
+    ,::std::string const& line
     ,::std::string const& info
 )noexcept;
 void assert_failed(
     ::std::string const& file
-    ,::std::size_t line
+    ,::std::string const& line
     ,::std::string const& info
 );
 void check_count_incement(void)noexcept;
@@ -83,12 +83,17 @@ void check_passed_count_increment(void)noexcept;
     group.emplace_back(#case_name__);                                        \
 }while(0)                                                                    \
 //
+//private
+#define __TEST_STR_IMPL(...) #__VA_ARGS__
+#define __TEST_STR(...) __TEST_STR_IMPL(__VA_ARGS__)
 //public
 #define TEST_CHECK(...) do{                                                  \
     ::test::detail::check_count_incement();                                  \
     if(!(__VA_ARGS__)){                                                      \
         ::test::detail::check_failed_count_increment();                      \
-        ::test::detail::check_failed(__FILE__,__LINE__,#__VA_ARGS__);        \
+        ::test::detail::check_failed(                                        \
+            __FILE__,__TEST_STR(__LINE__),#__VA_ARGS__                       \
+        );                                                                   \
     }else{                                                                   \
         ::test::detail::check_passed_count_increment();                      \
     }                                                                        \
@@ -100,8 +105,7 @@ void check_passed_count_increment(void)noexcept;
     if(!((lhs__)operator__(rhs__))){                                         \
         ::test::detail::check_failed_count_increment();                      \
         ::test::detail::check_failed(                                        \
-            __FILE__                                                         \
-            ,__LINE__                                                        \
+            __FILE__,__TEST_STR(__LINE__)                                    \
             ,(::std::ostringstream{}                                         \
                 <<(lhs__)<<" "#operator__" "<<(rhs__)).str()                 \
         );                                                                   \
@@ -131,7 +135,9 @@ void check_passed_count_increment(void)noexcept;
 //public
 #define TEST_ASSERT(...) do{                                                 \
     if(!(__VA_ARGS__)){                                                      \
-        ::test::detail::assert_failed(__FILE__,__LINE__,#__VA_ARGS__);       \
+        ::test::detail::assert_failed(                                       \
+            __FILE__,__TEST_STR(__LINE__),#__VA_ARGS__                       \
+        );                                                                   \
     }                                                                        \
 }while(0)                                                                    \
 //
@@ -139,8 +145,7 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT_OP(operator__,lhs__,rhs__) do{                           \
     if(!((lhs__)operator__(rhs__))){                                         \
         ::test::detail::assert_failed(                                       \
-            __FILE__                                                         \
-            ,__LINE__                                                        \
+            __FILE__,__TEST_STR(__LINE__)                                    \
             ,(::std::ostringstream{}                                         \
                 <<(lhs__)<<" "#operator__" "<<(rhs__)).str()                 \
         );                                                                   \
@@ -165,5 +170,13 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT_OR(lhs__,rhs__) TEST_ASSERT_OP(||,lhs__,rhs__)
 //public
 #define TEST_ASSERT_NOT(...) TEST_ASSERT(!(__VA_ARGS__))
+//public
+#define TEST_STATIC_ASSERT(...)                                              \
+    static_assert(                                                           \
+        __VA_ARGS__,__FILE__ "(" __TEST_STR(__LINE__) "): " #__VA_ARGS__     \
+    )                                                                        \
+//
+//public
+#define TEST_STATIC_ASSERT_NOT(...) TEST_STATIC_ASSERT(!(__VA_ARGS__))
 
 #endif//__TEST_HPP__
