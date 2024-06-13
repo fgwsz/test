@@ -78,10 +78,12 @@ public:
 static ::std::vector<::std::string> case_names={};
 static ::std::vector<::std::function<void(void)>> case_functions={};
 static ::std::vector<::test::detail::CheckFailedException> case_errors={};
-static ::std::unordered_map<::std::string,::std::size_t> case_name_to_index={};
+static ::std::unordered_map<::std::string,::std::size_t>
+    case_name_to_index={};
 static ::std::vector<::std::string> group_names={};
 static ::std::vector<::std::vector<::std::string>> group_bodys={};
-static ::std::unordered_map<::std::string,::std::size_t> group_name_to_index={};
+static ::std::unordered_map<::std::string,::std::size_t>
+    group_name_to_index={};
 static ::std::size_t check_count=0;
 static ::std::size_t check_failed_count=0;
 static ::std::size_t check_passed_count=0;
@@ -271,12 +273,12 @@ static bool execute_case(
     ::test::Timer case_timer={};
     auto catch_std_string=
         [&case_timer,&case_exception_what,&case_has_exception,&tab_count]
-        (::std::string const& what)noexcept{
+        (::std::string const& std_string)noexcept{
             case_timer.stop();
             case_exception_what=
                 ::std::string(tab_count+1,'\t')+"[exception]\n"
                 +::std::string(tab_count+2,'\t')+"<what> \""
-                +what+"\"\n";
+                +std_string+"\"\n";
             case_has_exception=true;
         };
     auto catch_std_exception=

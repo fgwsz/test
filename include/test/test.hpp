@@ -6,7 +6,7 @@
 #include<functional>//::std::function
 #include<vector>//::std::vector
 #include<chrono>//::std::chrono
-#include<sstream>//::std::stringstream
+#include<sstream>//::std::ostringstream
 
 namespace test{
 bool case_register(
@@ -57,18 +57,12 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_CASE(case_name__)                                               \
     static void test_case_function_of_##case_name__(void);                   \
     static bool test_case_is_registered_of_##case_name__=                    \
-        ::test::case_register(                                               \
-            #case_name__,                                                    \
-            ::std::function<void(void)>{                                     \
-                test_case_function_of_##case_name__                          \
-            }                                                                \
-        );                                                                   \
-    void test_case_function_of_##case_name__(void)                           \
+    ::test::case_register(#case_name__,test_case_function_of_##case_name__); \
+    static void test_case_function_of_##case_name__(void)                    \
 //
 //public
 #define TEST_GROUP(group_name__)                                             \
-    static ::std::vector<::std::string>                                      \
-        test_group_body_of_##group_name__={};                                \
+    static::std::vector<::std::string> test_group_body_of_##group_name__={}; \
     static void test_group_init_of_##group_name__(                           \
         ::std::vector<::std::string>& group=                                 \
             test_group_body_of_##group_name__                                \
@@ -94,11 +88,7 @@ void check_passed_count_increment(void)noexcept;
     ::test::detail::check_count_incement();                                  \
     if(!(__VA_ARGS__)){                                                      \
         ::test::detail::check_failed_count_increment();                      \
-        ::test::detail::check_failed(                                        \
-            __FILE__                                                         \
-            ,__LINE__                                                        \
-            ,#__VA_ARGS__                                                    \
-        );                                                                   \
+        ::test::detail::check_failed(__FILE__,__LINE__,#__VA_ARGS__);        \
     }else{                                                                   \
         ::test::detail::check_passed_count_increment();                      \
     }                                                                        \
@@ -108,18 +98,12 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_CHECK_OP(operator__,lhs__,rhs__) do{                            \
     ::test::detail::check_count_incement();                                  \
     if(!((lhs__)operator__(rhs__))){                                         \
-        ::std::stringstream ss;                                              \
-        ss.str("");                                                          \
-        ss<<(lhs__);                                                         \
-        ::std::string lhs_string=ss.str();                                   \
-        ss.str("");                                                          \
-        ss<<(rhs__);                                                         \
-        ::std::string rhs_string=ss.str();                                   \
         ::test::detail::check_failed_count_increment();                      \
         ::test::detail::check_failed(                                        \
             __FILE__                                                         \
             ,__LINE__                                                        \
-            ,lhs_string+" "#operator__" "+rhs_string                         \
+            ,(::std::ostringstream{}                                         \
+                <<(lhs__)<<" "#operator__" "<<(rhs__)).str()                 \
         );                                                                   \
     }else{                                                                   \
         ::test::detail::check_passed_count_increment();                      \
@@ -147,28 +131,18 @@ void check_passed_count_increment(void)noexcept;
 //public
 #define TEST_ASSERT(...) do{                                                 \
     if(!(__VA_ARGS__)){                                                      \
-        ::test::detail::assert_failed(                                       \
-            __FILE__                                                         \
-            ,__LINE__                                                        \
-            ,#__VA_ARGS__                                                    \
-        );                                                                   \
+        ::test::detail::assert_failed(__FILE__,__LINE__,#__VA_ARGS__);       \
     }                                                                        \
 }while(0)                                                                    \
 //
 //public
 #define TEST_ASSERT_OP(operator__,lhs__,rhs__) do{                           \
     if(!((lhs__)operator__(rhs__))){                                         \
-        ::std::stringstream ss;                                              \
-        ss.str("");                                                          \
-        ss<<(lhs__);                                                         \
-        ::std::string lhs_string=ss.str();                                   \
-        ss.str("");                                                          \
-        ss<<(rhs__);                                                         \
-        ::std::string rhs_string=ss.str();                                   \
         ::test::detail::assert_failed(                                       \
             __FILE__                                                         \
             ,__LINE__                                                        \
-            ,lhs_string+" "#operator__" "+rhs_string                         \
+            ,(::std::ostringstream{}                                         \
+                <<(lhs__)<<" "#operator__" "<<(rhs__)).str()                 \
         );                                                                   \
     }                                                                        \
 }while(0)                                                                    \

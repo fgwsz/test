@@ -132,9 +132,9 @@ TEST_CASE(assert_failed){
     //TEST_ASSERT_GE(1,2);
     //TEST_ASSERT_LT(1,1);
     //TEST_ASSERT_LE(2,1);
-    //TEST_ASSERT_AND(true,false);
+    TEST_ASSERT_AND(true,false);
     //TEST_ASSERT_OR(false,false);
-    TEST_ASSERT_NOT(true);
+    //TEST_ASSERT_NOT(true);
 }
 TEST_GROUP(passed_group){
     TEST_GROUP_ELEMENT(check_passed);
