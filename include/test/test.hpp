@@ -39,13 +39,11 @@ private:
 };
 namespace detail{
 void check_failed(
-    ::std::string const& file
-    ,::std::string const& line
+    ::std::string const& file,::std::string const& line
     ,::std::string const& info
 )noexcept;
 void assert_failed(
-    ::std::string const& file
-    ,::std::string const& line
+    ::std::string const& file,::std::string const& line
     ,::std::string const& info
 );
 void check_count_incement(void)noexcept;
@@ -70,8 +68,7 @@ void check_passed_count_increment(void)noexcept;
     static bool test_group_is_registered_of_##group_name__=[](void)noexcept{ \
         test_group_init_of_##group_name__();                                 \
         return ::test::group_register(                                       \
-            #group_name__                                                    \
-            ,test_group_body_of_##group_name__                               \
+            #group_name__,test_group_body_of_##group_name__                  \
         );                                                                   \
     }();                                                                     \
     static void test_group_init_of_##group_name__(                           \
@@ -171,10 +168,9 @@ void check_passed_count_increment(void)noexcept;
 //public
 #define TEST_ASSERT_NOT(...) TEST_ASSERT(!(__VA_ARGS__))
 //public
-#define TEST_STATIC_ASSERT(...)                                              \
-    static_assert(                                                           \
-        __VA_ARGS__,__FILE__ "(" __TEST_STR(__LINE__) "): " #__VA_ARGS__     \
-    )                                                                        \
+#define TEST_STATIC_ASSERT(...) static_assert(                               \
+    __VA_ARGS__,__FILE__ "(" __TEST_STR(__LINE__) "): " #__VA_ARGS__         \
+)                                                                            \
 //
 //public
 #define TEST_STATIC_ASSERT_NOT(...) TEST_STATIC_ASSERT(!(__VA_ARGS__))
