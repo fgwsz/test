@@ -1,7 +1,6 @@
 #ifndef __TEST_HPP__
 #define __TEST_HPP__
 
-#include<cstddef>//::std::size_t
 #include<string>//::std::string
 #include<functional>//::std::function
 #include<vector>//::std::vector

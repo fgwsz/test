@@ -1,4 +1,5 @@
 #include"test.hpp"
+#include<cstddef>//::std::size_t
 #include<cstdio>//::std::printf
 #include<cmath>//::std::floor
 #include<ratio>//::std::ratio
