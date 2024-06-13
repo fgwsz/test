@@ -1,6 +1,9 @@
-#pragma once
+#ifndef __TEST_TEST_HPP__
+#define __TEST_TEST_HPP__
+
 #include<stdexcept>//::std::runtime_error
 #include"test/test.hpp"
+
 TEST_CASE(c_str_exception){
     throw "c_str exception";
 }
@@ -157,3 +160,5 @@ void test_test(void)noexcept{
     ::test::execute_group("undefined");
     ::test::execute_group_all();
 }
+
+#endif//__TEST_TEST_HPP__

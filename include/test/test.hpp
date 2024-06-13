@@ -1,10 +1,13 @@
-#pragma once
+#ifndef __TEST_HPP__
+#define __TEST_HPP__
+
 #include<cstddef>//::std::size_t
 #include<string>//::std::string
 #include<functional>//::std::function
 #include<vector>//::std::vector
 #include<chrono>//::std::chrono
 #include<sstream>//::std::stringstream
+
 namespace test{
 bool case_register(
     ::std::string const& case_name
@@ -188,3 +191,5 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT_OR(lhs__,rhs__) TEST_ASSERT_OP(||,lhs__,rhs__)
 //public
 #define TEST_ASSERT_NOT(...) TEST_ASSERT(!(__VA_ARGS__))
+
+#endif//__TEST_HPP__

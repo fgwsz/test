@@ -4,6 +4,7 @@
 #include<ratio>//::std::ratio
 #include<unordered_map>//::std::unordered_map
 #include<exception>//::std::exception
+
 namespace test{
 namespace detail{
 class CheckFailedException:public ::std::exception{
