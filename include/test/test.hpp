@@ -4,7 +4,7 @@
 #include<functional>//::std::function
 #include<vector>//::std::vector
 #include<chrono>//::std::chrono
-#include<sstream>//::std::ostringstream
+#include<sstream>//::std::stringstream
 namespace test{
 bool case_register(
     ::std::string const& case_name
@@ -22,12 +22,13 @@ class Timer{
 public:
     void start(void)noexcept;
     void stop(void)noexcept;
-    double delta_nanoseconds(void)noexcept;
-    double delta_microseconds(void)noexcept;
-    double delta_milliseconds(void)noexcept;
-    double delta_seconds(void)noexcept;
-    double delta_minutes(void)noexcept;
-    double delta_hours(void)noexcept;
+    double delta_nanoseconds(void)const noexcept;
+    double delta_microseconds(void)const noexcept;
+    double delta_milliseconds(void)const noexcept;
+    double delta_seconds(void)const noexcept;
+    double delta_minutes(void)const noexcept;
+    double delta_hours(void)const noexcept;
+    ::std::string delta_string(void)const noexcept;
 private:
     using clock=::std::chrono::high_resolution_clock;
     using time_point=typename clock::time_point;

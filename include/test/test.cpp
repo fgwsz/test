@@ -1,5 +1,6 @@
 #include"test.hpp"
 #include<cstdio>//::std::printf
+#include<cmath>//
 #include<ratio>//::std::ratio
 #include<unordered_map>//::std::unordered_map
 #include<exception>//::std::exception
@@ -22,9 +23,9 @@ public:
     {
         this->what_=
             "[test::check] [failed]"
-            "\n\t\t<file> "+this->file_
-            +"\n\t\t<line> "+::std::to_string(this->line_)
-            +"\n\t\t<info> "+this->info_;
+            +this->file_
+            +"("+::std::to_string(this->line_)+")"
+            ":"+this->info_;
     }
     virtual char const* what(void)const noexcept override{
         return this->what_.c_str();
@@ -56,9 +57,9 @@ public:
     {
         this->what_=
             "[test::assert] [failed]"
-            "\n\t\t<file> "+this->file_
-            +"\n\t\t<line> "+::std::to_string(this->line_)
-            +"\n\t\t<info> "+this->info_;
+            +this->file_
+            +"("+::std::to_string(this->line_)+")"
+            ":"+this->info_;
     }
     virtual char const* what()const noexcept override{
         return this->what_.c_str();
@@ -128,31 +129,73 @@ void Timer::start(void)noexcept{
 void Timer::stop(void)noexcept{
     this->end_=Timer::clock::now();
 }
-double Timer::delta_nanoseconds(void)noexcept{
+double Timer::delta_nanoseconds(void)const noexcept{
     return ::test::detail::delta<::std::nano,typename Timer::time_point>
         (this->begin_,this->end_);
 }
-double Timer::delta_microseconds(void)noexcept{
+double Timer::delta_microseconds(void)const noexcept{
     return ::test::detail::delta<::std::micro,typename Timer::time_point>
         (this->begin_,this->end_);
 }
-double Timer::delta_milliseconds(void)noexcept{
+double Timer::delta_milliseconds(void)const noexcept{
     return ::test::detail::delta<::std::milli,typename Timer::time_point>
         (this->begin_,this->end_);
 }
-double Timer::delta_seconds(void)noexcept{
+double Timer::delta_seconds(void)const noexcept{
     return ::test::detail::delta<::std::ratio<1>,typename Timer::time_point>
         (this->begin_,this->end_);
 }
-double Timer::delta_minutes(void)noexcept{
+double Timer::delta_minutes(void)const noexcept{
     return ::test::detail::delta<::std::ratio<60>,typename Timer::time_point>
         (this->begin_,this->end_);
 }
-double Timer::delta_hours(void)noexcept{
+double Timer::delta_hours(void)const noexcept{
     return ::test::detail::delta<
             ::std::ratio<3600>
             ,typename Timer::time_point
     >(this->begin_,this->end_);
+}
+namespace detail{
+static ::std::string nanoseconds_to_string(double ns)noexcept{
+    constexpr double c_1ns=1;
+    constexpr double c_1us=1000*c_1ns;
+    constexpr double c_1ms=1000*c_1us;
+    constexpr double c_1s=1000*c_1ms;
+    constexpr double c_1m=60*c_1s;
+    constexpr double c_1h=60*c_1m;
+    double integer=0;
+    double others=0;
+    if(ns>=c_1h){
+        integer=::std::floor(ns/c_1h);
+        others=ns-integer*c_1h;
+        return ::std::to_string(static_cast<::std::size_t>(integer))+" h "
+            +::test::detail::nanoseconds_to_string(others);
+    }else if(ns>=c_1m){
+        integer=::std::floor(ns/c_1m);
+        others=ns-integer*c_1m;
+        return ::std::to_string(static_cast<::std::size_t>(integer))+" m "
+            +::test::detail::nanoseconds_to_string(others);
+    }else if(ns>=c_1s){
+        integer=::std::floor(ns/c_1s);
+        others=ns-integer*c_1s;
+        return ::std::to_string(static_cast<::std::size_t>(integer))+" s "
+            +::test::detail::nanoseconds_to_string(others);
+    }else if(ns>=c_1ms){
+        integer=::std::floor(ns/c_1ms);
+        others=ns-integer*c_1ms;
+        return ::std::to_string(static_cast<::std::size_t>(integer))+" ms "
+            +::test::detail::nanoseconds_to_string(others);
+    }else if(ns>=c_1us){
+        integer=::std::floor(ns/c_1us);
+        others=ns-integer*c_1us;
+        return ::std::to_string(static_cast<::std::size_t>(integer))+" us "
+            +::test::detail::nanoseconds_to_string(others);
+    }
+    return ::std::to_string(static_cast<::std::size_t>(ns))+" ns";
+}
+}//namespace test::detail
+::std::string Timer::delta_string(void)const noexcept{
+    return ::test::detail::nanoseconds_to_string(this->delta_nanoseconds());
 }
 namespace detail{
 void check_failed(
@@ -183,18 +226,23 @@ void check_passed_count_increment(void)noexcept{
 static void print_total_info(
     ::std::string type
     ,bool is_passed
-    ,::test::Timer timer
+    ,::test::Timer const& timer
     ,::std::string item_type
     ,::std::size_t count
     ,::std::size_t passed_count
     ,::std::size_t failed_count
+    ,::std::size_t tab_count=0
 )noexcept{
+    ::std::string format_string=
+        ::std::string(tab_count,'\t')
+        +"[%s] [%s] (%s)\n"
+        +::std::string(tab_count+1,'\t')
+        +"%s:%zu,passed:%zu,failed:%zu. (%.2f %%)\n";
     ::std::printf(
-        "[%s] [%s] (%f ms)\n"
-        "\t%s:%zu,passed:%zu,failed:%zu. (%f %%)\n"
+        format_string.c_str()
         ,type.c_str()
         ,::std::string(is_passed?"passed":"failed").c_str()
-        ,timer.delta_milliseconds()
+        ,timer.delta_string().c_str()
         ,item_type.c_str()
         ,count
         ,passed_count
@@ -205,7 +253,10 @@ static void print_total_info(
                 /static_cast<double>(count)*double{100}))
     );
 }
-static bool execute_case(::std::size_t case_index)noexcept{
+static bool execute_case(
+    ::std::size_t case_index
+    ,::std::size_t tab_count=0
+)noexcept{
     if(case_index>=case_names.size()){
         return false;
     }
@@ -217,31 +268,56 @@ static bool execute_case(::std::size_t case_index)noexcept{
     bool case_has_exception=false;
     ::std::string case_exception_what={};
     ::test::Timer case_timer={};
-    auto catch_callback=
-        [&case_timer,&case_exception_what,&case_has_exception]
-        (::std::string const& what){
+    auto catch_std_string=
+        [&case_timer,&case_exception_what,&case_has_exception,&tab_count]
+        (::std::string const& what)noexcept{
             case_timer.stop();
-            case_exception_what=what;
+            case_exception_what=
+                ::std::string(tab_count+1,'\t')+"[exception]\n"
+                +::std::string(tab_count+2,'\t')+"<what> \""
+                +what+"\"\n";
+            case_has_exception=true;
+        };
+    auto catch_std_exception=
+        [&catch_std_string](::std::exception const& std_exception)noexcept{
+            return catch_std_string(std_exception.what());
+        };
+    auto catch_unknown_exception=
+        [&case_timer,&case_exception_what,&case_has_exception,&tab_count]
+        (void)noexcept{
+            case_timer.stop();
+            case_exception_what=
+                ::std::string(tab_count+1,'\t')+"[exception]\n"
+                +::std::string(tab_count+2,'\t')+"[unknown exception]\n";
+            case_has_exception=true;
+        };
+    auto catch_test_assert_failed_exception=
+        [&case_timer,&case_exception_what,&case_has_exception,&tab_count]
+        (::test::detail::AssertFailedException const& exception)noexcept{
+            case_timer.stop();
+            case_exception_what=
+                ::std::string(tab_count+1,'\t')+"[test::assert] [failed]\n"
+                +::std::string(tab_count+2,'\t')+"<file> "
+                +exception.file()+'\n'
+                +::std::string(tab_count+2,'\t')+"<line> "
+                +::std::to_string(exception.line())+'\n'
+                +::std::string(tab_count+2,'\t')+"<info> "
+                +exception.info()+'\n';
             case_has_exception=true;
         };
     case_timer.start();
     try{
         ::test::detail::case_functions[case_index]();
     }catch(char const* c_str){
-        catch_callback("<what> \""+::std::string{c_str}+"\"");
+        catch_std_string(c_str);
     }catch(::std::string const& string){
-        catch_callback("<what> \""+string+"\"");
+        catch_std_string(string);
     }catch(::test::detail::AssertFailedException const& exception){
-        catch_callback(
-            "[test::assert] [failed]"
-            "\n\t\t<file> "+exception.file()
-            +"\n\t\t<line> "+::std::to_string(exception.line())
-            +"\n\t\t<info> "+exception.info()
-        );
+        catch_test_assert_failed_exception(exception);
     }catch(::std::exception const& exception){
-        catch_callback("<what> \""+::std::string{exception.what()}+"\"");
+        catch_std_exception(exception);
     }catch(...){
-        catch_callback("[unknown exception]");
+        catch_unknown_exception();
     }
     if(!case_has_exception){
         case_timer.stop();
@@ -256,18 +332,21 @@ static bool execute_case(::std::size_t case_index)noexcept{
         ,::test::detail::check_count
         ,::test::detail::check_passed_count
         ,::test::detail::check_failed_count
+        ,tab_count
     );
+    ::std::string format_string={};
     for(
         ::std::size_t index=0;
         index<::test::detail::case_errors.size();
         ++index
     ){
+        format_string=
+            ::std::string(tab_count+1,'\t')+"[test::check] [failed] %zu\n"
+            +::std::string(tab_count+2,'\t')+"<file> %s\n"
+            +::std::string(tab_count+2,'\t')+"<line> %zu\n"
+            +::std::string(tab_count+2,'\t')+"<info> %s\n";
         ::std::printf(
-            "\t[test::error] %zu\n"
-            "\t\t[test::check] [failed]\n"
-            "\t\t<file> %s\n"
-            "\t\t<line> %zu\n"
-            "\t\t<info> %s\n"
+            format_string.c_str()
             ,index
             ,::test::detail::case_errors[index].file().c_str()
             ,::test::detail::case_errors[index].line()
@@ -275,20 +354,22 @@ static bool execute_case(::std::size_t case_index)noexcept{
         );
     }
     if(case_has_exception){
-        ::std::printf(
-            "\t[exception]\n"
-            "\t\t%s\n"
-            ,case_exception_what.c_str()
-        );
+        ::std::printf(case_exception_what.c_str());
     }
     return case_is_passed;
 }
-static bool execute_group(::std::size_t group_index)noexcept{
+static bool execute_group(
+    ::std::size_t group_index
+    ,::std::size_t tab_count=0
+)noexcept{
     if(group_index>=::test::detail::group_names.size()){
         return false;
     }
+    ::std::string format_string={};
+    format_string=
+        ::std::string(tab_count,'\t')+"[test::group \"%s\"] [begin]\n";
     ::std::printf(
-        "[test::group \"%s\"] [begin]\n"
+        format_string.c_str()
         ,::test::detail::group_names[group_index].c_str()
     );
     ::std::size_t case_count=0;
@@ -299,8 +380,11 @@ static bool execute_group(::std::size_t group_index)noexcept{
     timer.start();
     for(auto const& case_name: ::test::detail::group_bodys[group_index]){
         if(::test::detail::case_name_to_index.count(case_name)==0){
+            format_string=
+                ::std::string(tab_count+1,'\t')
+                +"[test::case \"%s\"] [failed] can't be found.\n";
             ::std::printf(
-                "[test::case \"%s\"] [failed] can't be found.\n"
+                format_string.c_str()
                 ,case_name.c_str()
             );
             ++case_failed_count;
@@ -308,6 +392,7 @@ static bool execute_group(::std::size_t group_index)noexcept{
             if(
                 ::test::detail::execute_case(
                     ::test::detail::case_name_to_index[case_name]
+                    ,tab_count+1
                 )
             ){
                 ++case_passed_count;
@@ -327,9 +412,12 @@ static bool execute_group(::std::size_t group_index)noexcept{
         ,case_count
         ,case_passed_count
         ,case_failed_count
+        ,tab_count+1
     );
+    format_string=
+        ::std::string(tab_count,'\t')+"[test::group \"%s\"] [end]\n";
     ::std::printf(
-        "[test::group \"%s\"] [end]\n"
+        format_string.c_str()
         ,group_names[group_index].c_str()
     );
     return group_is_passed;
@@ -371,7 +459,7 @@ void execute_case_all(void)noexcept{
         index<::test::detail::case_names.size();
         ++index
     ){
-        if(::test::detail::execute_case(index)){
+        if(::test::detail::execute_case(index,1)){
             ++case_passed_count;
         }else{
             ++case_failed_count;
@@ -387,6 +475,7 @@ void execute_case_all(void)noexcept{
         ,case_count
         ,case_passed_count
         ,case_failed_count
+        ,1
     );
     ::std::printf("[test::case all] [end]\n");
 }
@@ -402,7 +491,7 @@ void execute_group_all(void)noexcept{
         index<::test::detail::group_names.size();
         ++index
     ){
-        if(::test::detail::execute_group(index)){
+        if(::test::detail::execute_group(index,1)){
             ++group_passed_count;
         }else{
             ++group_failed_count;
@@ -418,6 +507,7 @@ void execute_group_all(void)noexcept{
         ,group_count
         ,group_passed_count
         ,group_failed_count
+        ,1
     );
     ::std::printf("[test::group all] [end]\n");
 }
