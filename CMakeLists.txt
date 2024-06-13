@@ -2,8 +2,14 @@ cmake_minimum_required(VERSION 3.5)
 get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${PROJECT_NAME} LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
-include_directories(include)
-aux_source_directory(include/test INCLUDE_DIR)
-aux_source_directory(src SRC_DIR)
-aux_source_directory(tests TESTS_DIR)
-add_executable(${PROJECT_NAME} ${INCLUDE_DIR} ${SRC_DIR} ${TESTS_DIR})
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+)
+file(
+    GLOB_RECURSE
+    SOURCE_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+add_executable(${PROJECT_NAME} ${SOURCE_FILE})
