@@ -1,6 +1,7 @@
 #ifndef __TEST_TEST_HPP__
 #define __TEST_TEST_HPP__
 
+#include<cstdio>//::std::FILE ::std::fopen ::std::printf ::std::fclose
 #include<stdexcept>//::std::runtime_error
 #include"test/test.hpp"
 
@@ -162,13 +163,26 @@ TEST_GROUP(failed_group){
     TEST_GROUP_ELEMENT(static_assert_failed);
     TEST_GROUP_ELEMENT(undefined);
 }
-void test_test(void)noexcept{
+void test_console_output(void)noexcept{
     ::test::execute_case("check_passed");
     ::test::execute_case("undefined");
     ::test::execute_case_all();
     ::test::execute_group("passed_group");
     ::test::execute_group("undefined");
     ::test::execute_group_all();
+}
+void test_file_output(void)noexcept{
+    ::std::FILE* output_stream=::std::fopen("output.txt","w");
+    if(!output_stream){
+        ::std::printf("Output output_stream open failed.\n");
+    }
+    ::test::execute_case("check_passed",output_stream);
+    ::test::execute_case("undefined",output_stream);
+    ::test::execute_case_all(output_stream);
+    ::test::execute_group("passed_group",output_stream);
+    ::test::execute_group("undefined",output_stream);
+    ::test::execute_group_all(output_stream);
+    ::std::fclose(output_stream);
 }
 
 #endif//__TEST_TEST_HPP__
