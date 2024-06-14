@@ -110,32 +110,74 @@ TEST_CASE(assert_passed){
     TEST_ASSERT_OR(false,true);
     TEST_ASSERT_NOT(false);
 }
-TEST_CASE(assert_failed){
-    TEST_CHECK(1==1);
-    TEST_CHECK(2!=1);
-    //TEST_ASSERT(!(1==1));
-    //TEST_ASSERT(!(2!=1));
-    //TEST_ASSERT(!(2>1));
-    //TEST_ASSERT(!(2>=1));
-    //TEST_ASSERT(!(2>=2));
-    //TEST_ASSERT(!(1<2));
-    //TEST_ASSERT(!(1<=2));
-    //TEST_ASSERT(!(1<=1));
-    //TEST_ASSERT_OP(==,2,1);
-    //TEST_ASSERT_OP(!=,1,1);
-    //TEST_ASSERT_OP(>,2,2);
-    //TEST_ASSERT_OP(>=,1,2);
-    //TEST_ASSERT_OP(<,1,1);
-    //TEST_ASSERT_OP(<=,2,1);
-    //TEST_ASSERT_EQ(2,1);
-    //TEST_ASSERT_NE(1,1);
-    //TEST_ASSERT_GT(2,2);
-    //TEST_ASSERT_GE(1,2);
-    //TEST_ASSERT_LT(1,1);
-    //TEST_ASSERT_LE(2,1);
+TEST_CASE(assert_failed_1){
+    TEST_ASSERT(!(1==1));
+}
+TEST_CASE(assert_failed_2){
+    TEST_ASSERT(!(2!=1));
+}
+TEST_CASE(assert_failed_3){
+    TEST_ASSERT(!(2>1));
+}
+TEST_CASE(assert_failed_4){
+    TEST_ASSERT(!(2>=1));
+}
+TEST_CASE(assert_failed_5){
+    TEST_ASSERT(!(2>=2));
+}
+TEST_CASE(assert_failed_6){
+    TEST_ASSERT(!(1<2));
+}
+TEST_CASE(assert_failed_7){
+    TEST_ASSERT(!(1<=2));
+}
+TEST_CASE(assert_failed_8){
+    TEST_ASSERT(!(1<=1));
+}
+TEST_CASE(assert_failed_9){
+    TEST_ASSERT_OP(==,2,1);
+}
+TEST_CASE(assert_failed_10){
+    TEST_ASSERT_OP(!=,1,1);
+}
+TEST_CASE(assert_failed_11){
+    TEST_ASSERT_OP(>,2,2);
+}
+TEST_CASE(assert_failed_12){
+    TEST_ASSERT_OP(>=,1,2);
+}
+TEST_CASE(assert_failed_13){
+    TEST_ASSERT_OP(<,1,1);
+}
+TEST_CASE(assert_failed_14){
+    TEST_ASSERT_OP(<=,2,1);
+}
+TEST_CASE(assert_failed_15){
+    TEST_ASSERT_EQ(2,1);
+}
+TEST_CASE(assert_failed_16){
+    TEST_ASSERT_NE(1,1);
+}
+TEST_CASE(assert_failed_17){
+    TEST_ASSERT_GT(2,2);
+}
+TEST_CASE(assert_failed_18){
+    TEST_ASSERT_GE(1,2);
+}
+TEST_CASE(assert_failed_19){
+    TEST_ASSERT_LT(1,1);
+}
+TEST_CASE(assert_failed_20){
+    TEST_ASSERT_LE(2,1);
+}
+TEST_CASE(assert_failed_21){
     TEST_ASSERT_AND(true,false);
-    //TEST_ASSERT_OR(false,false);
-    //TEST_ASSERT_NOT(true);
+}
+TEST_CASE(assert_failed_22){
+    TEST_ASSERT_OR(false,false);
+}
+TEST_CASE(assert_failed_23){
+    TEST_ASSERT_NOT(true);
 }
 TEST_CASE(static_assert_passed){
     TEST_STATIC_ASSERT(1+1==2);
@@ -159,7 +201,29 @@ TEST_GROUP(failed_group){
     TEST_GROUP_ELEMENT(empty_string_exception);
     TEST_GROUP_ELEMENT(empty_std_exception);
     TEST_GROUP_ELEMENT(check_failed);
-    TEST_GROUP_ELEMENT(assert_failed);
+    TEST_GROUP_ELEMENT(assert_failed_1);
+    TEST_GROUP_ELEMENT(assert_failed_2);
+    TEST_GROUP_ELEMENT(assert_failed_3);
+    TEST_GROUP_ELEMENT(assert_failed_4);
+    TEST_GROUP_ELEMENT(assert_failed_5);
+    TEST_GROUP_ELEMENT(assert_failed_6);
+    TEST_GROUP_ELEMENT(assert_failed_7);
+    TEST_GROUP_ELEMENT(assert_failed_8);
+    TEST_GROUP_ELEMENT(assert_failed_9);
+    TEST_GROUP_ELEMENT(assert_failed_10);
+    TEST_GROUP_ELEMENT(assert_failed_11);
+    TEST_GROUP_ELEMENT(assert_failed_12);
+    TEST_GROUP_ELEMENT(assert_failed_13);
+    TEST_GROUP_ELEMENT(assert_failed_14);
+    TEST_GROUP_ELEMENT(assert_failed_15);
+    TEST_GROUP_ELEMENT(assert_failed_16);
+    TEST_GROUP_ELEMENT(assert_failed_17);
+    TEST_GROUP_ELEMENT(assert_failed_18);
+    TEST_GROUP_ELEMENT(assert_failed_19);
+    TEST_GROUP_ELEMENT(assert_failed_20);
+    TEST_GROUP_ELEMENT(assert_failed_21);
+    TEST_GROUP_ELEMENT(assert_failed_22);
+    TEST_GROUP_ELEMENT(assert_failed_23);
     TEST_GROUP_ELEMENT(static_assert_failed);
     TEST_GROUP_ELEMENT(undefined);
 }

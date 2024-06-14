@@ -71,7 +71,7 @@ void check_passed_count_increment(void)noexcept;
 //
 //public
 #define TEST_GROUP(group_name__)                                             \
-    static::std::vector<::std::string> test_group_body_of_##group_name__={}; \
+    static ::std::vector<::std::string> test_group_body_of_##group_name__={};\
     static void test_group_init_of_##group_name__(                           \
         ::std::vector<::std::string>& group=                                 \
             test_group_body_of_##group_name__                                \

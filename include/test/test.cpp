@@ -337,7 +337,7 @@ static bool execute_case(
         ::std::fprintf(
             output_stream
             ,format_string.c_str()
-            ,index
+            ,index+1
             ,::test::detail::case_errors[index].file().c_str()
             ,::test::detail::case_errors[index].line().c_str()
             ,::test::detail::case_errors[index].info().c_str()
