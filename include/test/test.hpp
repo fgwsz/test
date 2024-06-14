@@ -1,6 +1,7 @@
 #ifndef __TEST_HPP__
 #define __TEST_HPP__
 
+#include<cstdio>//::std::FILE stdout
 #include<string>//::std::string
 #include<functional>//::std::function
 #include<vector>//::std::vector
@@ -16,10 +17,16 @@ bool group_register(
     ::std::string const& group_name
     ,::std::vector<::std::string> const& group_body
 )noexcept;
-void execute_case(::std::string const& case_name)noexcept;
-void execute_group(::std::string const& group_name)noexcept;
-void execute_case_all(void)noexcept;
-void execute_group_all(void)noexcept;
+void execute_case(
+    ::std::string const& case_name
+    ,::std::FILE* output_stream=stdout
+)noexcept;
+void execute_group(
+    ::std::string const& group_name
+    ,::std::FILE* output_stream=stdout
+)noexcept;
+void execute_case_all(::std::FILE* output_stream=stdout)noexcept;
+void execute_group_all(::std::FILE* output_stream=stdout)noexcept;
 class Timer{
 public:
     void start(void)noexcept;
@@ -38,11 +45,13 @@ private:
 };
 namespace detail{
 void check_failed(
-    ::std::string const& file,::std::string const& line
+    ::std::string const& file
+    ,::std::string const& line
     ,::std::string const& info
 )noexcept;
 void assert_failed(
-    ::std::string const& file,::std::string const& line
+    ::std::string const& file
+    ,::std::string const& line
     ,::std::string const& info
 );
 void check_count_incement(void)noexcept;
@@ -54,7 +63,10 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_CASE(case_name__)                                               \
     static void test_case_function_of_##case_name__(void);                   \
     static bool test_case_is_registered_of_##case_name__=                    \
-    ::test::case_register(#case_name__,test_case_function_of_##case_name__); \
+        ::test::case_register(                                               \
+            #case_name__                                                     \
+            ,test_case_function_of_##case_name__                             \
+        );                                                                   \
     static void test_case_function_of_##case_name__(void)                    \
 //
 //public
@@ -67,7 +79,8 @@ void check_passed_count_increment(void)noexcept;
     static bool test_group_is_registered_of_##group_name__=[](void)noexcept{ \
         test_group_init_of_##group_name__();                                 \
         return ::test::group_register(                                       \
-            #group_name__,test_group_body_of_##group_name__                  \
+            #group_name__                                                    \
+            ,test_group_body_of_##group_name__                               \
         );                                                                   \
     }();                                                                     \
     static void test_group_init_of_##group_name__(                           \
@@ -81,14 +94,17 @@ void check_passed_count_increment(void)noexcept;
 //
 //private
 #define __TEST_STR_IMPL(...) #__VA_ARGS__
-#define __TEST_STR(...) __TEST_STR_IMPL(__VA_ARGS__)
+//public
+#define TEST_STR(...) __TEST_STR_IMPL(__VA_ARGS__)
 //public
 #define TEST_CHECK(...) do{                                                  \
     ::test::detail::check_count_incement();                                  \
     if(!(__VA_ARGS__)){                                                      \
         ::test::detail::check_failed_count_increment();                      \
         ::test::detail::check_failed(                                        \
-            __FILE__,__TEST_STR(__LINE__),#__VA_ARGS__                       \
+            __FILE__                                                         \
+            ,TEST_STR(__LINE__)                                              \
+            ,#__VA_ARGS__                                                    \
         );                                                                   \
     }else{                                                                   \
         ::test::detail::check_passed_count_increment();                      \
@@ -101,9 +117,10 @@ void check_passed_count_increment(void)noexcept;
     if(!((lhs__)operator__(rhs__))){                                         \
         ::test::detail::check_failed_count_increment();                      \
         ::test::detail::check_failed(                                        \
-            __FILE__,__TEST_STR(__LINE__)                                    \
-            ,(::std::ostringstream{}                                         \
-                <<(lhs__)<<" "#operator__" "<<(rhs__)).str()                 \
+            __FILE__                                                         \
+            ,TEST_STR(__LINE__)                                              \
+            ,(::std::ostringstream{}<<(lhs__)<<" "#operator__" "<<(rhs__))   \
+                .str()                                                       \
         );                                                                   \
     }else{                                                                   \
         ::test::detail::check_passed_count_increment();                      \
@@ -132,7 +149,9 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT(...) do{                                                 \
     if(!(__VA_ARGS__)){                                                      \
         ::test::detail::assert_failed(                                       \
-            __FILE__,__TEST_STR(__LINE__),#__VA_ARGS__                       \
+            __FILE__                                                         \
+            ,TEST_STR(__LINE__)                                              \
+            ,#__VA_ARGS__                                                    \
         );                                                                   \
     }                                                                        \
 }while(0)                                                                    \
@@ -141,9 +160,10 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT_OP(operator__,lhs__,rhs__) do{                           \
     if(!((lhs__)operator__(rhs__))){                                         \
         ::test::detail::assert_failed(                                       \
-            __FILE__,__TEST_STR(__LINE__)                                    \
-            ,(::std::ostringstream{}                                         \
-                <<(lhs__)<<" "#operator__" "<<(rhs__)).str()                 \
+            __FILE__                                                         \
+            ,TEST_STR(__LINE__)                                              \
+            ,(::std::ostringstream{}<<(lhs__)<<" "#operator__" "<<(rhs__))   \
+                .str()                                                       \
         );                                                                   \
     }                                                                        \
 }while(0)                                                                    \
@@ -168,7 +188,8 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT_NOT(...) TEST_ASSERT(!(__VA_ARGS__))
 //public
 #define TEST_STATIC_ASSERT(...) static_assert(                               \
-    __VA_ARGS__,__FILE__ "(" __TEST_STR(__LINE__) "): " #__VA_ARGS__         \
+    __VA_ARGS__                                                              \
+    ,__FILE__ "(" TEST_STR(__LINE__) "): " #__VA_ARGS__                      \
 )                                                                            \
 //
 //public

@@ -1,10 +1,15 @@
 #include"test.hpp"
+
 #include<cstddef>//::std::size_t
-#include<cstdio>//::std::printf
+#include<cstdio>//::std::FILE ::std::fprintf stdout
 #include<cmath>//::std::floor
-#include<ratio>//::std::ratio
-#include<unordered_map>//::std::unordered_map
 #include<exception>//::std::exception
+#include<vector>//::std::vector
+#include<functional>//::std::function
+#include<unordered_map>//::std::unordered_map
+#include<string>//::std::string ::std::to_string
+#include<chrono>//::std::chrono
+#include<ratio>//::std::ratio
 
 namespace test{
 namespace detail{
@@ -12,7 +17,8 @@ class CheckFailedException:public ::std::exception{
     ::std::string file_,line_,info_,what_;
 public:
     CheckFailedException(
-        ::std::string const& file,::std::string const& line
+        ::std::string const& file
+        ,::std::string const& line
         ,::std::string const& info
     )noexcept
     :file_(file),line_(line),info_(info){
@@ -35,7 +41,8 @@ class AssertFailedException:public ::std::exception{
     ::std::string file_,line_,info_,what_;
 public:
     AssertFailedException(
-        ::std::string const& file,::std::string const& line
+        ::std::string const& file
+        ,::std::string const& line
         ,::std::string const& info
     )noexcept
     :file_(file),line_(line),info_(info){
@@ -77,7 +84,8 @@ bool case_register(
     ::test::detail::case_names.emplace_back(case_name);
     ::test::detail::case_functions.emplace_back(case_function);
     ::test::detail::case_name_to_index.emplace(
-        case_name,::test::detail::case_name_to_index.size()
+        case_name
+        ,::test::detail::case_name_to_index.size()
     );
     return true;
 }
@@ -91,7 +99,8 @@ bool group_register(
     ::test::detail::group_names.emplace_back(group_name);
     ::test::detail::group_bodys.emplace_back(group_body);
     ::test::detail::group_name_to_index.emplace(
-        group_name,::test::detail::group_name_to_index.size()
+        group_name
+        ,::test::detail::group_name_to_index.size()
     );
     return true;
 }
@@ -130,9 +139,9 @@ double Timer::delta_minutes(void)const noexcept{
         (this->begin_,this->end_);
 }
 double Timer::delta_hours(void)const noexcept{
-    return ::test::detail::delta<
-            ::std::ratio<3600>,typename Timer::time_point
-    >(this->begin_,this->end_);
+    return
+        ::test::detail::delta<::std::ratio<3600>,typename Timer::time_point>
+        (this->begin_,this->end_);
 }
 namespace detail{
 static ::std::string nanoseconds_to_string(double ns)noexcept{
@@ -178,7 +187,8 @@ static ::std::string nanoseconds_to_string(double ns)noexcept{
 }
 namespace detail{
 void check_failed(
-    ::std::string const& file,::std::string const& line
+    ::std::string const& file
+    ,::std::string const& line
     ,::std::string const& info
 )noexcept{
     ::test::detail::case_errors.emplace_back(
@@ -186,7 +196,8 @@ void check_failed(
     );
 }
 void assert_failed(
-    ::std::string const& file,::std::string const& line
+    ::std::string const& file
+    ,::std::string const& line
     ,::std::string const& info
 ){
     throw ::test::detail::AssertFailedException(file,line,info);
@@ -200,27 +211,42 @@ void check_failed_count_increment(void)noexcept{
 void check_passed_count_increment(void)noexcept{
     ++::test::detail::check_passed_count;
 }
-static void print_total_info(
-    ::std::string type,bool is_passed,::test::Timer const& timer
-    ,::std::string item_type,::std::size_t count,::std::size_t passed_count
-    ,::std::size_t failed_count,::std::size_t tab_count=0
+static void fprint_total_info(
+    ::std::FILE* output_stream
+    ,::std::string type,bool is_passed
+    ,::test::Timer const& timer
+    ,::std::string item_type
+    ,::std::size_t count
+    ,::std::size_t passed_count
+    ,::std::size_t failed_count
+    ,::std::size_t tab_count=0
 )noexcept{
     ::std::string format_string=
         ::std::string(tab_count,'\t')
         +"[%s] [%s] (%s)\n"
         +::std::string(tab_count+1,'\t')
         +"%s:%zu,passed:%zu,failed:%zu. (%.2f %%)\n";
-    ::std::printf(
-        format_string.c_str(),type.c_str()
+    ::std::fprintf(
+        output_stream
+        ,format_string.c_str()
+        ,type.c_str()
         ,::std::string(is_passed?"passed":"failed").c_str()
-        ,timer.delta_string().c_str(),item_type.c_str()
-        ,count,passed_count,failed_count
-        ,(count==0?double{100}:(static_cast<double>(passed_count)
-                /static_cast<double>(count)*double{100}))
+        ,timer.delta_string().c_str()
+        ,item_type.c_str()
+        ,count
+        ,passed_count
+        ,failed_count
+        ,double{100}*(
+            count==0
+                ?double{1}
+                :static_cast<double>(passed_count)/static_cast<double>(count)
+        )
     );
 }
 static bool execute_case(
-    ::std::size_t case_index,::std::size_t tab_count=0
+    ::std::size_t case_index
+    ,::std::FILE* output_stream=stdout
+    ,::std::size_t tab_count=0
 )noexcept{
     if(case_index>=case_names.size()){
         return false;
@@ -287,13 +313,17 @@ static bool execute_case(
     if(!case_has_exception){
         case_timer.stop();
     }
-    case_is_passed=(!case_has_exception)
-        &&::test::detail::case_errors.empty();
-    ::test::detail::print_total_info(
-        "test::case \""+::test::detail::case_names[case_index]+"\""
-        ,case_is_passed,case_timer,"check",::test::detail::check_count
+    case_is_passed=(!case_has_exception)&&::test::detail::case_errors.empty();
+    ::test::detail::fprint_total_info(
+        output_stream
+        ,"test::case \""+::test::detail::case_names[case_index]+"\""
+        ,case_is_passed
+        ,case_timer
+        ,"check"
+        ,::test::detail::check_count
         ,::test::detail::check_passed_count
-        ,::test::detail::check_failed_count,tab_count
+        ,::test::detail::check_failed_count
+        ,tab_count
     );
     ::std::string format_string={};
     for(
@@ -304,20 +334,24 @@ static bool execute_case(
             +::std::string(tab_count+2,'\t')+"<file> %s\n"
             +::std::string(tab_count+2,'\t')+"<line> %s\n"
             +::std::string(tab_count+2,'\t')+"<info> %s\n";
-        ::std::printf(
-            format_string.c_str(),index
+        ::std::fprintf(
+            output_stream
+            ,format_string.c_str()
+            ,index
             ,::test::detail::case_errors[index].file().c_str()
             ,::test::detail::case_errors[index].line().c_str()
             ,::test::detail::case_errors[index].info().c_str()
         );
     }
     if(case_has_exception){
-        ::std::printf(case_exception_what.c_str());
+        ::std::fprintf(output_stream,case_exception_what.c_str());
     }
     return case_is_passed;
 }
 static bool execute_group(
-    ::std::size_t group_index,::std::size_t tab_count=0
+    ::std::size_t group_index
+    ,::std::FILE* output_stream=stdout
+    ,::std::size_t tab_count=0
 )noexcept{
     if(group_index>=::test::detail::group_names.size()){
         return false;
@@ -325,8 +359,10 @@ static bool execute_group(
     ::std::string format_string={};
     format_string=
         ::std::string(tab_count,'\t')+"[test::group \"%s\"] [begin]\n";
-    ::std::printf(
-        format_string.c_str(),::test::detail::group_names[group_index].c_str()
+    ::std::fprintf(
+        output_stream
+        ,format_string.c_str()
+        ,::test::detail::group_names[group_index].c_str()
     );
     ::std::size_t case_count=0;
     ::std::size_t case_passed_count=0;
@@ -336,14 +372,23 @@ static bool execute_group(
     timer.start();
     for(auto const& case_name: ::test::detail::group_bodys[group_index]){
         if(::test::detail::case_name_to_index.count(case_name)==0){
-            format_string=::std::string(tab_count+1,'\t')
+            format_string=
+                ::std::string(tab_count+1,'\t')
                 +"[test::case \"%s\"] [failed] can't be found.\n";
-            ::std::printf(format_string.c_str(),case_name.c_str());
+            ::std::fprintf(
+                output_stream
+                ,format_string.c_str()
+                ,case_name.c_str()
+            );
             ++case_failed_count;
         }else{
-            if(::test::detail::execute_case(
-                ::test::detail::case_name_to_index[case_name],tab_count+1
-            )){
+            if(
+                ::test::detail::execute_case(
+                    ::test::detail::case_name_to_index[case_name]
+                    ,output_stream
+                    ,tab_count+1
+                )
+            ){
                 ++case_passed_count;
             }else{
                 ++case_failed_count;
@@ -353,42 +398,63 @@ static bool execute_group(
     }
     timer.stop();
     group_is_passed=case_passed_count==case_count;
-    ::test::detail::print_total_info(
-        "test::group \""+::test::detail::group_names[group_index]+"\""
-        ,group_is_passed,timer,"case",case_count,case_passed_count
-        ,case_failed_count,tab_count+1
+    ::test::detail::fprint_total_info(
+        output_stream
+        ,"test::group \""+::test::detail::group_names[group_index]+"\""
+        ,group_is_passed
+        ,timer
+        ,"case"
+        ,case_count
+        ,case_passed_count
+        ,case_failed_count
+        ,tab_count+1
     );
     format_string=
         ::std::string(tab_count,'\t')+"[test::group \"%s\"] [end]\n";
-    ::std::printf(format_string.c_str(),group_names[group_index].c_str());
+    ::std::fprintf(
+        output_stream
+        ,format_string.c_str()
+        ,group_names[group_index].c_str()
+    );
     return group_is_passed;
 }
 }//namespace test::detail
-void execute_case(std::string const& case_name)noexcept{
+void execute_case(
+    std::string const& case_name
+    ,::std::FILE* output_stream/*=stdout*/
+)noexcept{
     if(::test::detail::case_name_to_index.count(case_name)==0){
-        ::std::printf(
-            "[test::case \"%s\"] [failed] can't be found.\n",case_name.c_str()
+        ::std::fprintf(
+            output_stream
+            ,"[test::case \"%s\"] [failed] can't be found.\n"
+            ,case_name.c_str()
         );
     }else{
         ::test::detail::execute_case(
             ::test::detail::case_name_to_index[case_name]
+            ,output_stream
         );
     }
 }
-void execute_group(::std::string const& group_name)noexcept{
+void execute_group(
+    ::std::string const& group_name
+    ,::std::FILE* output_stream/*=stdout*/
+)noexcept{
     if(::test::detail::group_name_to_index.count(group_name)==0){
-        ::std::printf(
-            "[test::group \"%s\"] [failed] can't be found.\n"
+        ::std::fprintf(
+            output_stream
+            ,"[test::group \"%s\"] [failed] can't be found.\n"
             ,group_name.c_str()
         );
     }else{
         ::test::detail::execute_group(
             ::test::detail::group_name_to_index[group_name]
+            ,output_stream
         );
     }
 }
-void execute_case_all(void)noexcept{
-    ::std::printf("[test::case all] [begin]\n");
+void execute_case_all(::std::FILE* output_stream/*=stdout*/)noexcept{
+    ::std::fprintf(output_stream,"[test::case all] [begin]\n");
     ::std::size_t case_count=0;
     ::std::size_t case_passed_count=0;
     ::std::size_t case_failed_count=0;
@@ -397,7 +463,7 @@ void execute_case_all(void)noexcept{
     for(
         ::std::size_t index=0;index<::test::detail::case_names.size();++index
     ){
-        if(::test::detail::execute_case(index,1)){
+        if(::test::detail::execute_case(index,output_stream,1)){
             ++case_passed_count;
         }else{
             ++case_failed_count;
@@ -405,14 +471,21 @@ void execute_case_all(void)noexcept{
         ++case_count;
     }
     timer.stop();
-    ::test::detail::print_total_info(
-        "test::case all",case_passed_count==case_count,timer,"case",case_count
-        ,case_passed_count,case_failed_count,1
+    ::test::detail::fprint_total_info(
+        output_stream
+        ,"test::case all"
+        ,case_passed_count==case_count
+        ,timer
+        ,"case"
+        ,case_count
+        ,case_passed_count
+        ,case_failed_count
+        ,1
     );
-    ::std::printf("[test::case all] [end]\n");
+    ::std::fprintf(output_stream,"[test::case all] [end]\n");
 }
-void execute_group_all(void)noexcept{
-    ::std::printf("[test::group all] [begin]\n");
+void execute_group_all(::std::FILE* output_stream/*=stdout*/)noexcept{
+    ::std::fprintf(output_stream,"[test::group all] [begin]\n");
     ::std::size_t group_count=0;
     ::std::size_t group_passed_count=0;
     ::std::size_t group_failed_count=0;
@@ -421,7 +494,7 @@ void execute_group_all(void)noexcept{
     for(
         ::std::size_t index=0;index<::test::detail::group_names.size();++index
     ){
-        if(::test::detail::execute_group(index,1)){
+        if(::test::detail::execute_group(index,output_stream,1)){
             ++group_passed_count;
         }else{
             ++group_failed_count;
@@ -429,10 +502,17 @@ void execute_group_all(void)noexcept{
         ++group_count;
     }
     timer.stop();
-    ::test::detail::print_total_info(
-        "test::group all",group_passed_count==group_count,timer,"group"
-        ,group_count,group_passed_count,group_failed_count,1
+    ::test::detail::fprint_total_info(
+        output_stream
+        ,"test::group all"
+        ,group_passed_count==group_count
+        ,timer
+        ,"group"
+        ,group_count
+        ,group_passed_count
+        ,group_failed_count
+        ,1
     );
-    ::std::printf("[test::group all] [end]\n");
+    ::std::fprintf(output_stream,"[test::group all] [end]\n");
 }
 }//namespace test
