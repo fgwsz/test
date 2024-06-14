@@ -15,7 +15,7 @@ bool case_register(
 )noexcept;
 bool group_register(
     ::std::string const& group_name
-    ,::std::vector<::std::string> const& group_body
+    ,::std::vector<::std::string/*element case name*/> const& group_body
 )noexcept;
 void execute_case(
     ::std::string const& case_name
