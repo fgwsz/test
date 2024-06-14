@@ -172,10 +172,12 @@ void test_console_output(void)noexcept{
     ::test::execute_group_all();
 }
 void test_file_output(void)noexcept{
-    ::std::FILE* output_stream=::std::fopen("output.txt","w");
+    char const* file_path="output.txt";
+    ::std::FILE* output_stream=::std::fopen(file_path,"w");
     if(!output_stream){
-        ::std::printf("Output output_stream open failed.\n");
+        ::std::printf("Output file \"%s\" failed to open.\n",file_path);
     }
+    ::std::printf("Output file \"%s\" opened successfully.\n",file_path);
     ::test::execute_case("check_passed",output_stream);
     ::test::execute_case("undefined",output_stream);
     ::test::execute_case_all(output_stream);
@@ -183,6 +185,7 @@ void test_file_output(void)noexcept{
     ::test::execute_group("undefined",output_stream);
     ::test::execute_group_all(output_stream);
     ::std::fclose(output_stream);
+    ::std::printf("Output file \"%s\" written successfully.\n",file_path);
 }
 
 #endif//__TEST_TEST_HPP__
