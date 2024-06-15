@@ -200,105 +200,39 @@ struct StaticCheckHelper<false>{
     static constexpr type value=
         static_cast<type>(StaticCheckHelper<true>::value)+1;
 };
-template<
-    typename File__
-    ,unsigned long long line__
-    ,typename Info__
-    ,bool condition__
->
-struct StaticCheckImpl{
-    static constexpr typename StaticCheckHelper<true>::type value=
-        StaticCheckHelper<condition__>::value;
-};
-template<char...chars__>
-struct StaticString{};
-template<unsigned long long index__,unsigned long long size__>
-static constexpr char char_array_at(char const(&char_array)[size__])noexcept{
-    return char_array[index__<size__?index__:(size__-1)];
-}
-template<char...chars__>
-auto static_string_trim_impl(StaticString<chars__...>)noexcept
-->StaticString<chars__...>;
-template<char...chars__,char...others__>
-auto static_string_trim_impl(
-    StaticString<chars__...>
-    ,StaticString<'\0'>
-    ,StaticString<others__>...
-)noexcept
-->StaticString<chars__...>;
-template<char char__,char...chars__,char...others__>
-auto static_string_trim_impl(
-    StaticString<chars__...>
-    ,StaticString<char__>
-    ,StaticString<others__>...
-)noexcept
-->decltype(static_string_trim_impl(
-    StaticString<chars__...,char__>{}
-    ,StaticString<others__>{}...
-));
-template<char...chars__>
-auto static_string_trim(StaticString<chars__...>)noexcept
-->decltype(::test::detail::static_string_trim_impl(StaticString<chars__>{}...));
-//private
-#define __TEST_CHAR_SEQUENCE_16(n__,char_array__)                            \
-    ::test::detail::char_array_at<0x##n__##0>(char_array__)                  \
-    ,::test::detail::char_array_at<0x##n__##1>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##2>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##3>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##4>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##5>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##6>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##7>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##8>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##9>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##A>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##B>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##C>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##D>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##E>(char_array__)                 \
-    ,::test::detail::char_array_at<0x##n__##F>(char_array__)                 \
-//
-//private
-#define __TEST_CHAR_SEQUENCE_256(n__,char_array__)                           \
-    __TEST_CHAR_SEQUENCE_16(n__##0,char_array__)                             \
-    ,__TEST_CHAR_SEQUENCE_16(n__##1,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##2,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##3,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##4,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##5,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##6,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##7,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##8,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##9,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##A,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##B,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##C,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##D,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##E,char_array__)                            \
-    ,__TEST_CHAR_SEQUENCE_16(n__##F,char_array__)                            \
-//
-//private
-#define __TEST_CHAR_SEQUENCE(char_array__)                                   \
-    __TEST_CHAR_SEQUENCE_256(0,char_array__)                                 \
-//
-//private
-#define __TEST_MAKE_STATIC_STRING(char_array__)                              \
-    decltype(::test::detail::static_string_trim(                             \
-        ::test::detail::StaticString<                                        \
-            __TEST_CHAR_SEQUENCE(char_array__)                               \
-        >{}                                                                  \
-    ))                                                                       \
-//
 }//namespace test::detail
 }//namespace test
+//private
+#define __TEST_CONCAT_IMPL(lhs__,rhs__) lhs__##rhs__
 //public
-#define TEST_STATIC_CHECK(...)                                               \
-     extern decltype(::test::detail::StaticCheckImpl<                        \
-        __TEST_MAKE_STATIC_STRING(__FILE__)                                  \
-        ,__LINE__                                                            \
-        ,__TEST_MAKE_STATIC_STRING(#__VA_ARGS__)                             \
-        ,static_cast<bool>(__VA_ARGS__)                                      \
-    >::value-0) test_static_check_expression                                 \
+#define TEST_CONCAT(lhs__,rhs__) __TEST_CONCAT_IMPL(lhs__,rhs__)
+//public
+#if (__COUNTER__+__COUNTER__>=0)
+#   define TEST_HAS_COUNTER 1
+#else
+#   define TEST_HAS_COUNTER 0
+#endif
+//public
+#if TEST_HAS_COUNTER
+#   define TEST_STATIC_CHECK(...)                                            \
+    static auto const TEST_CONCAT(test_static_check_expression_,__COUNTER__)=\
+    [](void)noexcept{                                                        \
+        using namespace ::test::detail;                                      \
+        constexpr typename StaticCheckHelper<true>::type ret=                \
+            StaticCheckHelper<static_cast<bool>(__VA_ARGS__)>::value;        \
+        return ret;                                                          \
+    }()                                                                      \
+//
+#else
+#   define TEST_STATIC_CHECK(...)                                            \
+    [](void)noexcept{                                                        \
+        using namespace ::test::detail;                                      \
+        constexpr typename StaticCheckHelper<true>::type ret=                \
+            StaticCheckHelper<static_cast<bool>(__VA_ARGS__)>::value;        \
+        return ret;                                                          \
+    }()                                                                      \
+//
+#endif//TEST_HAS_COUNTER
 //
 //public
 #define TEST_STATIC_CHECK_NOT(...) TEST_STATIC_CHECK(!(__VA_ARGS__))
