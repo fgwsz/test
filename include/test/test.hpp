@@ -233,7 +233,6 @@ struct StaticCheckHelper<false>{
     }()                                                                      \
 //
 #endif//TEST_HAS_COUNTER
-//
 //public
 #define TEST_STATIC_CHECK_NOT(...) TEST_STATIC_CHECK(!(__VA_ARGS__))
 //public
