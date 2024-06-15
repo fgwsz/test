@@ -227,6 +227,10 @@ TEST_GROUP(failed_group){
     TEST_GROUP_ELEMENT(static_assert_failed);
     TEST_GROUP_ELEMENT(undefined);
 }
+TEST_STATIC_CHECK(1==0);
+TEST_STATIC_CHECK(1+1==3);
+TEST_STATIC_CHECK_NOT(1==1);
+TEST_STATIC_CHECK_NOT(1+1==2);
 void test_console_output(void)noexcept{
     ::test::execute_case("check_passed");
     ::test::execute_case("undefined");

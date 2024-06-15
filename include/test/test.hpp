@@ -186,9 +186,44 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_ASSERT_OR(lhs__,rhs__) TEST_ASSERT_OP(||,lhs__,rhs__)
 //public
 #define TEST_ASSERT_NOT(...) TEST_ASSERT(!(__VA_ARGS__))
+//private
+namespace test{
+namespace detail{
+template<bool condition__>
+struct StaticCheckHelper;
+template<>
+struct StaticCheckHelper<false>{
+    using type=unsigned char;
+    static constexpr type value=((type)(-1));
+};
+template<>
+struct StaticCheckHelper<true>{
+    using type=unsigned int;
+    static constexpr type value=static_cast<type>(
+        StaticCheckHelper<false>::value
+    )+1;
+};
+}//namespace test::detail
+}//namespace test
+//private
+#define __TEST_CONCAT_IMPL(lhs__,rhs__) lhs__##rhs__
+//public
+#define TEST_CONCAT(lhs__,rhs__) __TEST_CONCAT_IMPL(lhs__,rhs__)
+//public
+#define TEST_STATIC_CHECK(...)                                               \
+    auto const TEST_CONCAT(test_static_check_id_of_,__COUNTER__)=            \
+    [](void)noexcept{                                                        \
+        constexpr typename ::test::detail::StaticCheckHelper<                \
+            static_cast<bool>(__VA_ARGS__)                                   \
+        >::type ret=::test::detail::StaticCheckHelper<true>::value;          \
+        return ret;                                                          \
+    }()                                                                      \
+//
+//public
+#define TEST_STATIC_CHECK_NOT(...) TEST_STATIC_CHECK(!(__VA_ARGS__))
 //public
 #define TEST_STATIC_ASSERT(...) static_assert(                               \
-    __VA_ARGS__                                                              \
+    static_cast<bool>(__VA_ARGS__)                                           \
     ,__FILE__ "(" TEST_STR(__LINE__) "): " #__VA_ARGS__                      \
 )                                                                            \
 //
