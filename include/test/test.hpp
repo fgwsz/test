@@ -190,18 +190,25 @@ void check_passed_count_increment(void)noexcept;
 namespace test{
 namespace detail{
 template<bool condition__>
-struct StaticCheckHelper;
-template<>
-struct StaticCheckHelper<false>{
+struct StaticCheckHelper{
     using type=unsigned char;
     static constexpr type value=((type)(-1));
 };
 template<>
-struct StaticCheckHelper<true>{
+struct StaticCheckHelper<false>{
     using type=unsigned int;
-    static constexpr type value=static_cast<type>(
-        StaticCheckHelper<false>::value
-    )+1;
+    static constexpr type value=
+        static_cast<type>(StaticCheckHelper<true>::value)+1;
+};
+template<
+    typename File__
+    ,unsigned long long line__
+    ,typename Info__
+    ,bool condition__
+>
+struct StaticCheckImpl{
+    static constexpr typename StaticCheckHelper<true>::type value=
+        StaticCheckHelper<condition__>::value;
 };
 template<char...chars__>
 struct StaticString{};
@@ -284,20 +291,14 @@ auto static_string_trim(StaticString<chars__...>)noexcept
 //
 }//namespace test::detail
 }//namespace test
-//private
-#define __TEST_CONCAT_IMPL(lhs__,rhs__) lhs__##rhs__
-//public
-#define TEST_CONCAT(lhs__,rhs__) __TEST_CONCAT_IMPL(lhs__,rhs__)
 //public
 #define TEST_STATIC_CHECK(...)                                               \
-    __TEST_MAKE_STATIC_STRING(__FILE__) const                                \
-        TEST_CONCAT(test_static_check_expression_id_,__LINE__)=              \
-    [](void)noexcept{                                                        \
-        constexpr typename ::test::detail::StaticCheckHelper<                \
-            static_cast<bool>(__VA_ARGS__)                                   \
-        >::type _=::test::detail::StaticCheckHelper<true>::value;            \
-        return __TEST_MAKE_STATIC_STRING(__FILE__){};                        \
-    }()                                                                      \
+     extern decltype(::test::detail::StaticCheckImpl<                        \
+        __TEST_MAKE_STATIC_STRING(__FILE__)                                  \
+        ,__LINE__                                                            \
+        ,__TEST_MAKE_STATIC_STRING(#__VA_ARGS__)                             \
+        ,static_cast<bool>(__VA_ARGS__)                                      \
+    >::value-0) test_static_check_expression                                 \
 //
 //public
 #define TEST_STATIC_CHECK_NOT(...) TEST_STATIC_CHECK(!(__VA_ARGS__))
