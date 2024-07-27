@@ -1,6 +1,6 @@
-$root_path=Split-Path $ExecutionPath -Parent
-$project_name=Split-Path -Leaf (Get-Location)
-$build_path="$root_path/build/windows"
+$root_path=Split-Path -Parent $MyInvocation.MyCommand.Definition
+$project_name=Split-Path -Leaf $root_path
+$build_path=Join-Path $root_path "build/windows"
 if(!(Test-Path -Path $build_path)){
     mkdir $build_path
 }
