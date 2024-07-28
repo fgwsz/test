@@ -1,5 +1,5 @@
 # test
-Unit test library for C++11.  
+`C++11` unit testing library header only.
 ## Usage
 Copy `include/test.hpp` to your project.  
 ### Include
