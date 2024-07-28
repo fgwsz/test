@@ -1,9 +1,9 @@
 # test
 Unit test library for C++11.  
 ## Usage
-Copy the directory `include/test` to your project.  
+Copy `include/test.hpp` to your project.  
 ### Include
-`#include "test/test.hpp"`  
+`#include "test.hpp"`  
 ### API
 #### Public
 namespace:`::test`  

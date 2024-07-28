@@ -3,7 +3,7 @@
 
 #include<cstdio>//::std::FILE ::std::fopen ::std::printf ::std::fclose
 #include<stdexcept>//::std::runtime_error
-#include"test/test.hpp"
+#include"test.hpp"
 
 TEST_CASE(c_str_exception){
     throw "c_str exception";

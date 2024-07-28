@@ -1,6 +1,6 @@
 #ifndef __TEST_TEST_STATIC_HPP__
 #define __TEST_TEST_STATIC_HPP__
-#include"test/test.hpp"
+#include"test.hpp"
 void foo(void)noexcept{
     TEST_STATIC_CHECK(1+1==3);
     TEST_STATIC_CHECK_NOT(1+1==2);
