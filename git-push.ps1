@@ -9,7 +9,7 @@ if(!($commit_info -eq "q")){
     git add ./README.md
     git add ./.gitignore
     git add ./*.ps1
-    git add ./.sh
+    git add ./*.sh
     git commit -m $commit_info
     git push
 }
