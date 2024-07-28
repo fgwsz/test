@@ -1,10 +1,5 @@
-function rmrf($path) { Remove-Item $path -Recurse -Force }
-$mingw_build_path="./build/mingw/"
-if(Test-Path -Path $mingw_build_path){
-    rmrf $mingw_build_path
+$root_path=Split-Path $ExecutionPath -Parent
+$build_path="$root_path/build/windows"
+if(Test-Path -Path $build_path){
+    Remove-Item $build_path -Recurse -Force
 }
-$msvc_build_path="./build/msvc/"
-if(Test-Path -Path $msvc_build_path){
-    rmrf $msvc_build_path
-}
-rmrf ./bin/*.exe
