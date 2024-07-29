@@ -591,7 +591,7 @@ static bool execute_case(
         );
     }
     if(case_has_exception){
-        ::std::fprintf(output_stream,case_exception_what.c_str());
+        ::std::fprintf(output_stream,"%s",case_exception_what.c_str());
     }
     return case_is_passed;
 }
