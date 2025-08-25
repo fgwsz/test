@@ -64,7 +64,7 @@ void assert_failed(
     ,std::string const& line
     ,std::string const& info
 );
-void check_count_incement(void)noexcept;
+void check_count_increment(void)noexcept;
 void check_failed_count_increment(void)noexcept;
 void check_passed_count_increment(void)noexcept;
 }//namespace test::detail
@@ -108,7 +108,7 @@ void check_passed_count_increment(void)noexcept;
 #define TEST_STR(...) __TEST_STR_IMPL(__VA_ARGS__)
 //public
 #define TEST_CHECK(...) do{                                                  \
-    test::detail::check_count_incement();                                  \
+    test::detail::check_count_increment();                                  \
     if(!(__VA_ARGS__)){                                                      \
         test::detail::check_failed_count_increment();                      \
         test::detail::check_failed(                                        \
@@ -123,7 +123,7 @@ void check_passed_count_increment(void)noexcept;
 //
 //public
 #define TEST_CHECK_OP(operator__,lhs__,rhs__) do{                            \
-    test::detail::check_count_incement();                                  \
+    test::detail::check_count_increment();                                  \
     if(!((lhs__)operator__(rhs__))){                                         \
         test::detail::check_failed_count_increment();                      \
         test::detail::check_failed(                                        \
@@ -449,7 +449,7 @@ void assert_failed(
 ){
     throw test::detail::AssertFailedException(file,line,info);
 }
-void check_count_incement(void)noexcept{
+void check_count_increment(void)noexcept{
     ++test::detail::check_count;
 }
 void check_failed_count_increment(void)noexcept{
